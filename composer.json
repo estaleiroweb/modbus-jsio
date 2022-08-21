@@ -1,0 +1,32 @@
+{
+	"name": "estaleiroweb/modbus-jsio",
+	"description": "Modbus TCP/UDP/RTU/ASCII framework and conect to hilevel json doc to manager every IO",
+	"type": "library",
+	"license": "MIT",
+	"version": "1.0.0",
+	"autoload": {
+		"files": [
+			"main.php"
+		],
+		"psr-4": {
+			"EstaleiroWeb\\Modbus\\": "src/"
+		}
+	},
+	"authors": [{
+		"name": "estaleiroweb",
+		"email": "helbert@estaleiroweb.com.br"
+	}],
+    "require": {
+		"php": ">=5.4",
+		"ext-ctype": "*",
+        "aldas/modbus-tcp-client": "^3.0",
+        "mightypork/phpmodbus": "^0.8.0",
+		"react/child-process": "^0.6.4",
+		"react/datagram": "^1.8",
+		"react/socket": "^1.11",
+		"psr/log": "^3.0",
+		"phpunit/phpunit": "^9.5",
+		"phpstan/phpstan": "^1.8",
+		"react/event-loop": "^1.3"
+    }
+}

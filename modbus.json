@@ -1,0 +1,523 @@
+{
+	"refer": [
+		"https://embarcados.com.br/protocolo-modbus/"
+	],
+	"glossary": {
+		"node": {
+			"description": "Id of node modbus",
+			"type": "int",
+			"range": [0, 255],
+			"details": {
+				"broadcast": {
+					"description": "Every slaves receiave only but don`t response",
+					"range": [0]
+				},
+				"work": {
+					"description": "Slave address",
+					"range": [1, 247]
+				},
+				"reserved": {
+					"description": "Reserved address",
+					"range": [248, 255]
+				}
+			}
+		},
+		"address": {
+			"unit": "bits",
+			"ranges": {
+				"coils": {
+					"description": "Coils",
+					"address": [1, 9999],
+					"add_hex": ["0000", "270E"],
+					"permition": "rw",
+					"type": "digital",
+					"len": 1
+				},
+				"discret_inputs": {
+					"description": "Discret Inputs",
+					"address": [10001, 1999],
+					"add_hex": ["0000", "270E"],
+					"permition": "ro",
+					"type": "digital",
+					"len": 1
+				},
+				"input_register": {
+					"description": "Input Register",
+					"address": [30001, 39999],
+					"add_hex": ["0000", "270E"],
+					"permition": "ro",
+					"type": "analogic",
+					"len": 16
+				},
+				"holding_register": {
+					"description": "Holding Register",
+					"address": [40001, 49999],
+					"add_hex": ["0000", "270E"],
+					"permition": "rw",
+					"type": "analogic",
+					"len": 16
+				}
+			}
+		},
+		"fn": {
+			"1": {
+				"decription": {
+					"en_us": "Read coil-type bit block(discrete output).",
+					"pt-br": "Leitura de bloco de bits do tipo coil(saída discreta)."
+				},
+				"action": "read",
+				"refer": "address.coils"
+			},
+			"2": {
+				"decription": {
+					"en_us": "Read block of discrete inputs type bits.",
+					"pt-br": "Leitura de bloco de bits do tipo entradas discretas."
+				},
+				"action": "read",
+				"refer": "address.discret_inputs"
+			},
+			"3": {
+				"decription": {
+					"en_us": "Reading block of holding type registers.",
+					"pt-br": "Leitura de bloco de registradores do tipo holding."
+				},
+				"action": "read",
+				"refer": "address.holding_register"
+			},
+			"4": {
+				"decription": {
+					"en_us": "Input-type register block reading.",
+					"pt-br": "Leitura de bloco de registradores do tipo input."
+				},
+				"action": "read",
+				"refer": "address.input_register"
+			},
+			"5": {
+				"decription": {
+					"en_us": "Write to a single coil bit (discrete output).",
+					"pt-br": "Escrita em um único bit do tipo coil(saída discreta)."
+				},
+				"action": "write",
+				"multiples": false,
+				"refer": "address.coils"
+			},
+			"6": {
+				"decription": {
+					"en_us": "Writing to a single holding register.",
+					"pt-br": "Escrita em um único registrador do tipo holding."
+				},
+				"action": "write",
+				"multiples": false,
+				"refer": "address.holding_register"
+			},
+			"7": {
+				"decription": {
+					"en_us": "Read the contents of 8 exception states.",
+					"pt-br": "Ler o conteúdo de 8 estados de exceção."
+				}
+			},
+			"8": {
+				"decription": {
+					"en_us": "Provide a series of tests to verify communication and internal errors.",
+					"pt-br": "Prover uma série de testes para verificação da comunicação e erro internos."
+				}
+			},
+			"11": {
+				"decription": {
+					"en_us": "Modbus: Get the event counter.",
+					"pt-br": "Modbus: Obter o contador de eventos."
+				}
+			},
+			"12": {
+				"decription": {
+					"en_us": "Modbus: Get an event report.",
+					"pt-br": "Modbus: Obter um relatório de eventos."
+				}
+			},
+			"15": {
+				"decription": {
+					"en_us": "Write in bit block of coil type (discrete output).",
+					"pt-br": "Escrita em bloco de bits do tipo coil(saída discreta)."
+				},
+				"action": "write",
+				"multiples": true,
+				"refer": "address.coils"
+			},
+			"16": {
+				"decription": {
+					"en_us": "Block writing of holding type registers.",
+					"pt-br": "Escrita em bloco de registradores do tipo holding."
+				},
+				"action": "write",
+				"multiples": true,
+				"refer": "address.holding_register"
+			},
+			"17": {
+				"decription": {
+					"en_us": "Read some device information.",
+					"pt-br": "Ler algumas informações do dispositivo."
+				}
+			},
+			"20": {
+				"decription": {
+					"en_us": "Read information from a file.",
+					"pt-br": "Ler informações de um arquivo."
+				}
+			},
+			"21": {
+				"decription": {
+					"en_us": "Write information to a file.",
+					"pt-br": "Escrever informações em um arquivo."
+				}
+			},
+			"22": {
+				"decription": {
+					"en_us": "Modify the contents of wait registers through logical operations.",
+					"pt-br": "Modificar o conteúdo de registradores de espera através de operações   lógicas."
+				}
+			},
+			"23": {
+				"decription": {
+					"en_us": "Combines reading and writing registers in a single transaction.",
+					"pt-br": "Combina ler e escrever em registradores numa única transação."
+				}
+			},
+			"24": {
+				"decription": {
+					"en_us": "Read the contents of the FIFO queue of registers.",
+					"pt-br": "Ler o conteúdo da fila FIFO de registradores."
+				}
+			},
+			"43": {
+				"decription": {
+					"en_us": "Device Model Identification.",
+					"pt-br": "Identificação do modelo do dispositivo."
+				}
+			}
+		},
+		"data": {},
+		"CRC": {
+			"description": "Cyclical Redundancy Checking"
+		},
+		"fnType": {
+			"int": "function(aOrder,aBytes,bSigned){}",
+			"real": "function(aOrder,aBytes,bSigned){}",
+			"text": "function(len,aBytes){ return aBytes.slice(0,len).join('')}"
+		},
+		"types": {
+			"bool": {
+				"same": "bit"
+			},
+			"mediumint": {
+				"same": "int16"
+			},
+			"int": {
+				"same": "int32"
+			},
+			"bigint": {
+				"same": "int64"
+			},
+			"decimal": {
+				"same": "float"
+			},
+			"bit": {
+				"register": 1,
+				"len": 1,
+				"unit": "bits",
+				"range": {
+					"signed": [0, 1],
+					"unsigned": [0, 1]
+				},
+				"description": "discrete on/off value",
+				"example_value": 1
+			},
+			"int16": {
+				"register": 1,
+				"len": 16,
+				"unit": "bits",
+				"range": {
+					"signed": [-32768, 32767],
+					"unsigned": [0, 65535]
+				},
+				"stored": {
+					"hl": {
+						"fn": "fnType.int([1,0],aBytes,bSigned)",
+						"descr": "Hi Low bytes"
+					},
+					"lh": {
+						"fn": "fnType.int([0,1],aBytes,bSigned)",
+						"descr": "Low Hi bytes"
+					}
+				},
+				"description": "16-bit unsigned/signed integer",
+				"example_value": 1234567
+			},
+			"int32": {
+				"register": 2,
+				"len": 32,
+				"unit": "bits",
+				"range": {
+					"signed": [-2147483648, 2147483647],
+					"unsigned": [0, 4294967295]
+				},
+				"stored": {
+					"hl": {
+						"fn": "fnType.int([3,2,1,0],aBytes,bSigned)",
+						"descr": "Hi int16-hl, Low int16-hl"
+					},
+					"lh": {
+						"fn": "fnType.int([0,1,2,3],aBytes,bSigned)",
+						"descr": "Low int16-lh, Hi int16-lh"
+					},
+					"hli": {
+						"fn": "fnType.int([2,3,0,1],aBytes,bSigned)",
+						"descr": "Hi int16-lh, Low int16-lh"
+					},
+					"lhi": {
+						"fn": "fnType.int([1,0,3,2],aBytes,bSigned)",
+						"descr": "Low int16-hl, Hi int16-hl"
+					}
+				},
+				"description": "32-bit unsigned/signed integer",
+				"example_value": 1734563845732
+			},
+			"int64": {
+				"register": 4,
+				"len": 64,
+				"unit": "bits",
+				"range": {
+					"signed": [-9223372036854775808, 9223372036854775807],
+					"unsigned": [0, 18446744073709551615]
+				},
+				"stored": {
+					"hl": {
+						"fn": "fnType.int([7,6,5,4,3,2,1,0],aBytes,bSigned)",
+						"descr": "Hi Low Bytes"
+					},
+					"lh": {
+						"fn": "fnType.int([0,1,2,3,4,5,6,7],aBytes,bSigned)",
+						"descr": "Low to Hi Bytes"
+					}
+				},
+				"description": "64-bit unsigned/signed integer",
+				"example_value": 1734563845732
+			},
+			"float": {
+				"len": 32,
+				"unit": "bits",
+				"register": 2,
+				"range": {
+					"signed": [-1.2e-38, 3.4e+38],
+					"unsigned": [0, 3.4e+38]
+				},
+				"stored": {
+					"hl": {
+						"fn": "fnType.int([3,2,1,0],aBytes,bSigned)",
+						"descr": "Hi int16-hl, Low int16-hl"
+					},
+					"lh": {
+						"fn": "fnType.int([0,1,2,3],aBytes,bSigned)",
+						"descr": "Low int16-lh, Hi int16-lh"
+					},
+					"hli": {
+						"fn": "fnType.int([2,3,0,1],aBytes,bSigned)",
+						"descr": "Hi int16-lh, Low int16-lh"
+					},
+					"lhi": {
+						"fn": "fnType.int([1,0,3,2],aBytes,bSigned)",
+						"descr": "Low int16-hl, Hi int16-hl"
+					}
+				},
+				"description": "32-bit single precision IEEE floating point number",
+				"example_value": 17.3845732
+			},
+			"char2": {
+				"register": 1,
+				"len": 2,
+				"unit": "bytes",
+				"description": "character ASCII string. bit Xh00 também termina texto",
+				"example_value": "®A"
+			},
+			"char4": {
+				"register": 2,
+				"len": 4,
+				"unit": "bytes",
+				"description": "character ASCII string. bit Xh00 também termina texto",
+				"example_value": "®A"
+			},
+			"char8": {
+				"register": 4,
+				"len": 8,
+				"unit": "bytes",
+				"description": "character ASCII string. bit Xh00 também termina texto",
+				"example_value": "®A"
+			},
+			"char16": {
+				"register": 8,
+				"len": 16,
+				"unit": "bytes",
+				"description": "character ASCII string. bit Xh00 também termina texto",
+				"example_value": "®A"
+			},
+			"char32": {
+				"register": 16,
+				"len": 32,
+				"unit": "bytes",
+				"description": "character ASCII string. bit Xh00 também termina texto",
+				"example_value": "®A"
+			},
+			"char64": {
+				"register": 32,
+				"len": 64,
+				"unit": "bytes",
+				"description": "character ASCII string. bit Xh00 também termina texto",
+				"example_value": "®A"
+			}
+		}
+	},
+	"message": {
+		"resquest": {
+			"who": "master",
+			"direction": "push",
+			"frame": ["node", "fn", "data", "CRC"]
+		},
+		"response": {
+			"who": "slave",
+			"direction": "pull",
+			"frame": ["node", "fn", "data", "CRC"]
+		}
+	},
+	"interfaces": {
+		"RS232": {
+			"slaves": 1,
+			"len": 15,
+			"unit": "meters"
+		},
+		"RS485": {
+			"slaves": 32,
+			"len": 1200,
+			"unit": "meters"
+		},
+		"RS422": {
+			"slaves": 32,
+			"len": 1200,
+			"unit": "meters"
+		}
+	},
+	"baudrate": [300, 9600, 19200, 100000],
+	"modes": {
+		"RTU": {
+			"description": "Remote Terminal Unit",
+			"unit": "bit",
+			"data": [{
+					"len": 8,
+					"refer": "node",
+					"description": "Address"
+				}, {
+					"len": 8,
+					"refer": "fn",
+					"description": "Function"
+				}, {
+					"len": "function (n) { return n * 8; }",
+					"refer": "data",
+					"description": "Data"
+				},
+				{
+					"len": 16,
+					"description": "CRC Check"
+				}
+			]
+		},
+		"ASCII": {
+			"interval": 1,
+			"interval_unit": "seconds",
+			"code": "Hexa",
+			"er_code": "[0-9A-F]",
+			"unit": "char",
+			"data": [{
+					"len": 1,
+					"value": ":",
+					"description": "Start"
+				}, {
+					"len": 2,
+					"refer": "node",
+					"description": "Address"
+				}, {
+					"len": 1,
+					"refer": "fn",
+					"description": "Function"
+				}, {
+					"len": "function (n) { return n * 8; }",
+					"refer": "data",
+					"description": "Data"
+				},
+				{
+					"len": 2,
+					"unit": "char",
+					"description": "LRC Check"
+				},
+				{
+					"len": 2,
+					"unit": "char",
+					"value": "\r\n",
+					"description": "End"
+				}
+			],
+			"bit_per_byte": [{
+				"len": 1,
+				"description": "Begin"
+			}, {
+				"len": 7,
+				"description": "Data. Least significant bit first",
+				"pt_br": "Dados. bit menos significativo primeiro"
+			}, {
+				"len": 1,
+				"description": "even/odd parity, or no parity bit",
+				"pt_br": "paridade par / ímpar,  ou sem bit de paridade"
+			}, {
+				"len": 1,
+				"description": "stop, if parity is used; 2 bits if no parity",
+				"pt_br": "parada, se a paridade é usado; 2 bits se sem paridade"
+			}, {
+				"len": 16,
+				"description": "Error check : Longitudinal Redundancy Check (LRC)",
+				"pt_br": "Erro check : Longitudinal Redundancy Check (LRC)"
+			}]
+		},
+		"TCP/IP": {
+			"unit": "bytes",
+			"default_port": 502,
+			"request": {
+				"data_encapsulated": "Like RTU",
+				"data": [{
+					"len": 7,
+					"description": "MBAP - Modbus Application Header",
+					"data": [{
+						"len": 2,
+						"description": "Transaction identifier: usado para identificação da resposta para a transação"
+					}, {
+						"len": 2,
+						"description": "Protocol identifier: 0 (zero) indica Modbus"
+					}, {
+						"len": 2,
+						"description": "Length: contagem de todos os próximos bytes"
+					}, {
+						"len": 1,
+						"refer": "node",
+						"description": "Unit identifier: utilizado para identificar o escravo remoto em uma rede Modbus RTU"
+					}],
+					"obs": "Modbus TCP não acrescenta ao quadro um campo de checagem de erros, entretanto o frame ethernet já utiliza CRC-32 tornando desnecessário outro campo de checagem. O cliente Modbus TCP deve iniciar uma conexão TCP com o servidor a fim de enviar as requisições. A porta TCP 502 é a porta padrão para conexão com servidores Modbus TCP."
+				}, {
+					"len": 1,
+					"refer": "fn",
+					"description": "Function code"
+				}, {
+					"len": "function (n) { return n; }",
+					"refer": "data",
+					"description": "Data"
+				}]
+			},
+			"response": {}
+		}
+	}
+}
