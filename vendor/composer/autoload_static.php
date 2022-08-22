@@ -16,14 +16,6 @@ class ComposerStaticInit7bc42cfca32d3af4b1fdda752c412d8d
     );
 
     public static $prefixLengthsPsr4 = array (
-        'p' => 
-        array (
-            'phpDocumentor\\Reflection\\' => 25,
-        ),
-        'W' => 
-        array (
-            'Webmozart\\Assert\\' => 17,
-        ),
         'R' => 
         array (
             'React\\Stream\\' => 13,
@@ -39,7 +31,6 @@ class ComposerStaticInit7bc42cfca32d3af4b1fdda752c412d8d
         'P' => 
         array (
             'Psr\\Log\\' => 8,
-            'Prophecy\\' => 9,
             'PhpParser\\' => 10,
         ),
         'M' => 
@@ -59,16 +50,6 @@ class ComposerStaticInit7bc42cfca32d3af4b1fdda752c412d8d
     );
 
     public static $prefixDirsPsr4 = array (
-        'phpDocumentor\\Reflection\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/phpdocumentor/reflection-common/src',
-            1 => __DIR__ . '/..' . '/phpdocumentor/reflection-docblock/src',
-            2 => __DIR__ . '/..' . '/phpdocumentor/type-resolver/src',
-        ),
-        'Webmozart\\Assert\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/webmozart/assert/src',
-        ),
         'React\\Stream\\' => 
         array (
             0 => __DIR__ . '/..' . '/react/stream/src',
@@ -108,10 +89,6 @@ class ComposerStaticInit7bc42cfca32d3af4b1fdda752c412d8d
         'Psr\\Log\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/log/src',
-        ),
-        'Prophecy\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/phpspec/prophecy/src/Prophecy',
         ),
         'PhpParser\\' => 
         array (

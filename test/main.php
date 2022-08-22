@@ -41,4 +41,5 @@ require __DIR__ . '/../vendor/autoload.php';
 
 $m = new Modbus('192.168.1.115');
 $r = $m->connect()->fc($argv[1] ?? 4, $argv[2] ?? 1, 2);
-print_r(['result' => $r, 'log' => $m->log,]);
+print $m();
+//print_r(['result' => $r, 'log' => $m->log,]);
