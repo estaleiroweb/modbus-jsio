@@ -126,6 +126,50 @@
             "install-path": "../doctrine/instantiator"
         },
         {
+            "name": "estaleiroweb/traits",
+            "version": "dev-main",
+            "version_normalized": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/estaleiroweb/traits.git",
+                "reference": "2c24c296310326c88af66b20e60f1b834d2ab0aa"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/estaleiroweb/traits/zipball/2c24c296310326c88af66b20e60f1b834d2ab0aa",
+                "reference": "2c24c296310326c88af66b20e60f1b834d2ab0aa",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3"
+            },
+            "time": "2022-08-22T00:04:55+00:00",
+            "default-branch": true,
+            "type": "library",
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "EstaleiroWeb\\Traits\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "estaleiroweb",
+                    "email": "helbert@estaleiroweb.com.br"
+                }
+            ],
+            "description": "PHP Traits used in others projects of EstaleiroWeb",
+            "support": {
+                "issues": "https://github.com/estaleiroweb/traits/issues",
+                "source": "https://github.com/estaleiroweb/traits/tree/main"
+            },
+            "install-path": "../estaleiroweb/traits"
+        },
+        {
             "name": "evenement/evenement",
             "version": "v3.0.1",
             "version_normalized": "3.0.1.0",

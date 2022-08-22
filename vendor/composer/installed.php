@@ -2,11 +2,11 @@
     'root' => array(
         'pretty_version' => '1.0.0',
         'version' => '1.0.0.0',
-        'type' => 'project',
+        'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
         'reference' => NULL,
-        'name' => 'estaleiroweb/modbus',
+        'name' => 'estaleiroweb/modbus-jsio',
         'dev' => true,
     ),
     'versions' => array(
@@ -28,13 +28,24 @@
             'reference' => '10dcfce151b967d20fde1b34ae6640712c3891bc',
             'dev_requirement' => false,
         ),
-        'estaleiroweb/modbus' => array(
+        'estaleiroweb/modbus-jsio' => array(
             'pretty_version' => '1.0.0',
             'version' => '1.0.0.0',
-            'type' => 'project',
+            'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
             'reference' => NULL,
+            'dev_requirement' => false,
+        ),
+        'estaleiroweb/traits' => array(
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../estaleiroweb/traits',
+            'aliases' => array(
+                0 => '9999999-dev',
+            ),
+            'reference' => '2c24c296310326c88af66b20e60f1b834d2ab0aa',
             'dev_requirement' => false,
         ),
         'evenement/evenement' => array(

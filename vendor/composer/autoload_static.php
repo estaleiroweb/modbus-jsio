@@ -12,7 +12,7 @@ class ComposerStaticInit7bc42cfca32d3af4b1fdda752c412d8d
         'ad155f8f1cf0d418fe49e248db8c661b' => __DIR__ . '/..' . '/react/promise/src/functions_include.php',
         '972fda704d680a3a53c68e34e193cb22' => __DIR__ . '/..' . '/react/promise-timer/src/functions_include.php',
         '6124b4c8570aa390c21fafd04a26c69f' => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy/deep_copy.php',
-        '542dba7e299c10ba2feeda4485da80b7' => __DIR__ . '/../..' . '/main.php',
+        'bde0a0e44ac7a467e695f1f69105ade0' => __DIR__ . '/../..' . '/main.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -48,6 +48,7 @@ class ComposerStaticInit7bc42cfca32d3af4b1fdda752c412d8d
         ),
         'E' => 
         array (
+            'EstaleiroWeb\\Traits\\' => 20,
             'EstaleiroWeb\\Modbus\\' => 20,
         ),
         'D' => 
@@ -119,6 +120,10 @@ class ComposerStaticInit7bc42cfca32d3af4b1fdda752c412d8d
         'ModbusTcpClient\\' => 
         array (
             0 => __DIR__ . '/..' . '/aldas/modbus-tcp-client/src',
+        ),
+        'EstaleiroWeb\\Traits\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/estaleiroweb/traits/src',
         ),
         'EstaleiroWeb\\Modbus\\' => 
         array (

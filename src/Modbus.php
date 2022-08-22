@@ -1,39 +1,10 @@
-#!/usr/bin/php
 <?php
-/*
-https://pt.linuxcapable.com/install-php-8-1-on-linux-mint-20/
-https://packagist.org/packages/aldas/modbus-tcp-client
-https://github.com/aldas/modbus-tcp-client
 
+namespace EstaleiroWeb\Modbus;
 
-
-Welcome to ScadaBR installer for Linux!
-
-64-bit machine detected
-Files present! Let's go to install!
-
-=== Tomcat configuration ===
-Define Tomcat port (default: 8080): 
-Define a username for tomcat-manager (default: tomcat): 
-Define a password for created user: 
-============================
-
-Tomcat port will be set to: 8080
-
-The following user will be created to access tomcat-manager:
-Username: "tomcat"
-Password: "!tc27896"
-
-Type n to change data or press ENTER to continue.
-
-
-*/
-if (php_sapi_name() !== 'cli') {
-	echo 'Should be used only in command line interface';
-	return;
-}
-
-require __DIR__ . '/vendor/autoload.php';
+use Exception;
+use SimpleXMLElement;
+use EstaleiroWeb\Traits\GetSet;
 
 use ModbusTcpClient\Network\BinaryStreamConnection;
 use ModbusTcpClient\Packet\ModbusFunction\ReadHoldingRegistersRequest;
@@ -43,10 +14,8 @@ use ModbusTcpClient\Packet\ResponseFactory;
 use ModbusTcpClient\Utils\Endian;
 
 class Modbus {
-	protected $conn;
-	protected $result = [];
-
-	private $readonly = [
+	use GetSet;
+	protected $readonly = [
 		'modes' => ['TCP', 'UDP', 'RTU', 'ASCII'],
 		'returns' => ['json', 'xml', 'text', 'table'],
 		'fcs' => [
@@ -72,11 +41,15 @@ class Modbus {
 		'debug' => null,
 		'elapsed' => 0,
 	];
-	private $protected = [
+	protected $protect = [
 		'connectTimeout' => 1.5, // seconds timeout when establishing connection to the server
 		'writeTimeout' => 0.5, // seconds timeout when writing/sending packet to the server
 		'readTimeout' => 1.0, // seconds timeout when waiting response from server
 	];
+
+	protected $conn;
+	protected $result = [];
+
 	/**
 	 * __construct
 	 * @param string|array Mode or array of arguments readonly with setters method
@@ -108,22 +81,15 @@ class Modbus {
 	public function __invoke() {
 		return "";
 	}
-	public function __get($nm) {
-		if (key_exists($nm, $this->readonly)) return $this->readonly[$nm];
-		if (method_exists($this, $fn = 'get' . $nm)) return $this->$fn();
-		if (key_exists($nm, $this->protected)) return $this->protected[$nm];
-	}
-	public function __set($nm, $val) {
-		if (method_exists($this, $fn = 'set' . $nm)) return $this->$fn($val);
-		if (!key_exists($nm, $this->readonly)) $this->protected[$nm] = $val;
-	}
 
 	private function _setByReadonlyArray($key, $val, $src) {
 		if (in_array($val, $this->$src)) $this->readonly[$key] = $val;
 		if (key_exists($val, $this->$src)) $this->readonly[$key] = $this->$src[$val];
 	}
+
 	public function setMode($val) {
 		$this->_setByReadonlyArray('mode', strtoupper($val), 'modes');
+		return $this;
 	}
 	public function setIP($val) {
 		$port = null;
@@ -136,22 +102,27 @@ class Modbus {
 		$this->readonly['ip'] = $val;
 		$this->port = $port;
 		if (is_null($this->mode)) $this->mode = 'TCP';
+		return $this;
 	}
 	public function setPort($val) {
 		$val = (int)$val;
 		if ($val <= 0 || $val > 65535) return;
 		$this->readonly['port'] = $val;
+		return $this;
 	}
 	public function setSerial($val) {
 		//print __FUNCTION__ . '[' . __LINE__ . ']:' . $val . "\n";
 		$this->readonly['serial'] = $val;
 		if (is_null($this->mode)) $this->mode = 'RTU';
+		return $this;
 	}
 	public function setReturn($val) {
 		$this->_setByReadonlyArray('return', strtolower($val), 'returns');
+		return $this;
 	}
 	public function setLog($val) {
 		$this->readonly['log'][] = $val;
+		return $this;
 	}
 
 	protected function init($arr) {
@@ -174,7 +145,7 @@ class Modbus {
 
 	public function connect() {
 		try {
-			$this->log = 'Connect: '.$this->ip;
+			$this->log = 'Connect: ' . $this->ip;
 			$this->conn = BinaryStreamConnection::getBuilder()
 				->setHost($this->ip)
 				->setPort($this->port)
@@ -377,6 +348,3 @@ class Modbus {
 		}*/
 	}
 }
-$m = new Modbus('192.168.1.115');
-$r = $m->connect()->fc($argv[1] ?? 4, $argv[2] ?? 1,2);
-print_r(['result' => $r, 'log' => $m->log,]);
