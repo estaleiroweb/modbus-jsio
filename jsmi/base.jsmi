@@ -1,0 +1,379 @@
+{
+	"name": {
+		"id": 1,
+		"key": "base"
+	},
+	"convention": {
+		"filename": "vendor[-serie]-model[-version][-other_details]"
+	},
+	"refer": [
+		"https://www.json.org/"
+	],
+	"glossary": {
+		"jsmi": "Management Information by JSON"
+	},
+	"units": {
+		"scale": {
+			"Y": {
+				"description": "yotta",
+				"factor": 1e24
+			},
+			"Z": {
+				"description": "zetta",
+				"factor": 1e21
+			},
+			"E": {
+				"description": "exa",
+				"factor": 1e18
+			},
+			"P": {
+				"description": "peta",
+				"factor": 1e15
+			},
+			"T": {
+				"description": "tera",
+				"factor": 1e12
+			},
+			"G": {
+				"description": "giga",
+				"factor": 1e9
+			},
+			"M": {
+				"description": "mega",
+				"factor": 1e6
+			},
+			"k": {
+				"description": "quilo",
+				"factor": 1e3
+			},
+			"h": {
+				"description": "hecto",
+				"factor": 1e2
+			},
+			"da": {
+				"description": "deca",
+				"factor": 1e1
+			},
+			"d": {
+				"description": "deci",
+				"factor": 1e-1
+			},
+			"c": {
+				"description": "centi",
+				"factor": 1e-2
+			},
+			"m": {
+				"description": "mili",
+				"factor": 1e-3
+			},
+			"µ": {
+				"description": "micro",
+				"factor": 1e-6
+			},
+			"n": {
+				"description": "nano",
+				"factor": 1e-9
+			},
+			"p": {
+				"description": "pico",
+				"factor": 1e-12
+			},
+			"f": {
+				"description": "femto",
+				"factor": 1e-15
+			},
+			"a": {
+				"description": "atto",
+				"factor": 1e-18
+			},
+			"z": {
+				"description": "zepto",
+				"factor": 1e-21
+			},
+			"y": {
+				"description": "yocto",
+				"factor": 1e-24
+			}
+		},
+		"raw": {
+			"b": "bit",
+			"B": "byte",
+			"m": "meter",
+			"l": "liter",
+			"m²": "square meter",
+			"m³": "cubic meter",
+			"V": "volt",
+			"A": "ampere",
+			"W": "watt",
+			"Ω": "ohm",
+			"°C": "degrees centigrade",
+			"RH": "relative humidity",
+			"%RH": "percent relative humidity"
+		},
+		"used": {
+			"dm": "decimeter",
+			"mm": "millimeter"
+		}
+	},
+	"types": {
+		"int": {
+			"parameteres": {
+				"bytes": {
+					"default": 2,
+					"description": "size of storage",
+					"range": [1, 8]
+				},
+				"unsigned": {
+					"default": 0,
+					"description": "method of parser",
+					"range": [0, 1]
+				},
+				"len": {
+					"default": 10,
+					"description": "size of apresentation",
+					"range": [1, 22]
+				},
+				"zerofill": {
+					"default": 0,
+					"description": "zero pad left to apresentation",
+					"range": [0, 1]
+				}
+			},
+			"description": "unsigned/signed integer"
+		},
+		"bit": {
+			"len": 1,
+			"unit": "bits",
+			"range": {
+				"signed": [0, -1],
+				"unsigned": [0, 1]
+			},
+			"description": "boolean or bit value"
+		},
+		"float": {
+			"extends": "int",
+			"bytes": 4,
+			"parameteres": {
+				"precision": {
+					"default": 10,
+					"description": "size of apresentation",
+					"range": [1, 22]
+				}
+			},
+			"range": {
+				"signed": [-1.2e-38, 3.4e+38],
+				"unsigned": [0, 3.4e+38]
+			},
+			"description": "32-bit single precision IEEE floating point number"
+		},
+		"double": {
+			"extends": "float",
+			"bytes": 8,
+			"range": {
+				"signed": [-1.2e-38, 3.4e+38],
+				"unsigned": [0, 3.4e+38]
+			},
+			"description": "32-bit single precision IEEE floating point number"
+		},
+		"decimal": {
+			"extends": "float",
+			"description": "32-bit single precision same int2/(10*precision)"
+		},
+		"char": {
+			"parameteres": {
+				"bytes": {
+					"default": 2,
+					"description": "size of storage",
+					"range": [1, 255]
+				}
+			},
+			"description": "character ASCII string. bit Xh00 também termina texto"
+		},
+		"year": {
+			"bytes": 1,
+			"description": "70-99 (1970-1999), 00-69 (2000-2069)"
+		},
+		"date": {
+			"bytes": 4,
+			"description": "YYYY-MM-DD 0000-01-01~9999-12-31"
+		},
+		"time": {
+			"bytes": 4,
+			"description": "HH:MI:SS (-838:59:59~838:59:59) 3 bytes + fractional seconds storage"
+		},
+		"datetime": {
+			"bytes": 8,
+			"description": "YYYY-MM-DD HH:MI:SS (1000-01-01 00:00:00~9999-12-31 23:59:59) 5 bytes + fractional seconds storage"
+		},
+		"timestamp": {
+			"bytes": 4,
+			"description": "YYYY-MM-DD HH:MI:SS (1970-01-01 00:00:01~2038-01-09 03:14:07) 4 bytes + fractional seconds storage"
+		},
+		"enum": {
+			"bytes": 1,
+			"parameteres": {
+				"bytes": {
+					"default": 1,
+					"description": "size of storage",
+					"range": [1, 2]
+				},
+				"source": {
+					"description": "array int=>string value"
+				}
+			},
+			"description": "Convert int value to string value"
+		},
+		"set": {
+			"bytes": 1,
+			"parameteres": {
+				"bytes": {
+					"default": 1,
+					"description": "size of storage",
+					"range": [1, 2]
+				},
+				"source": {
+					"description": "array int=>string value"
+				}
+			},
+			"description": "Convert 8~16 bits to multple string value"
+		},
+		"bool": {
+			"extends": "bit"
+		},
+		"tinyint": {
+			"extends": "int1"
+		},
+		"mediumint": {
+			"extends": "int2"
+		},
+		"bigint": {
+			"extends": "int8"
+		},
+		"dec": {
+			"extends": "decimal"
+		},
+		"int1": {
+			"extends": "int",
+			"bytes": 1,
+			"range": {
+				"signed": [-128, 127],
+				"unsigned": [0, 255]
+			},
+			"description": "8-bit unsigned/signed integer"
+		},
+		"int2": {
+			"extends": "int",
+			"bytes": 2,
+			"range": {
+				"signed": [-32768, 32767],
+				"unsigned": [0, 65535]
+			},
+			"description": "16-bit unsigned/signed integer"
+		},
+		"int4": {
+			"extends": "int",
+			"bytes": 4,
+			"range": {
+				"signed": [-2147483648, 2147483647],
+				"unsigned": [0, 4294967295]
+			},
+			"description": "32-bit unsigned/signed integer"
+		},
+		"int8": {
+			"extends": "int",
+			"bytes": 8,
+			"range": {
+				"signed": [-9223372036854775808, 9223372036854775807],
+				"unsigned": [0, 18446744073709551615]
+			},
+			"description": "64-bit unsigned/signed integer"
+		},
+		"uint1": {
+			"extends": "int1",
+			"unsigned": 1
+		},
+		"uint2": {
+			"extends": "int2",
+			"unsigned": 1
+		},
+		"uint4": {
+			"extends": "int4",
+			"unsigned": 1
+		},
+		"uint8": {
+			"extends": "int8",
+			"unsigned": 1
+		},
+		"ufloat": {
+			"extends": "float",
+			"unsigned": 1
+		},
+		"udouble": {
+			"extends": "double",
+			"unsigned": 1
+		},
+		"udecimal": {
+			"extends": "decimal",
+			"unsigned": 1
+		},
+		"char2": {
+			"extends": "char",
+			"bytes": 2
+		},
+		"char4": {
+			"extends": "char",
+			"bytes": 4
+		},
+		"char8": {
+			"extends": "char",
+			"bytes": 8
+		},
+		"char16": {
+			"extends": "char",
+			"bytes": 16
+		},
+		"char32": {
+			"extends": "char",
+			"bytes": 32
+		},
+		"char64": {
+			"extends": "char",
+			"bytes": 64
+		}
+	},
+	"storage": {
+		"mo": {
+			"description": "machine byte order",
+			"order": [0, 1]
+		},
+		"be": {
+			"description": "big endian byte order",
+			"order": [1, 0]
+		},
+		"le": {
+			"description": "little endian byte order",
+			"order": [0, 1]
+		}
+	},
+	"standards": {
+		"height": {
+			"unit": "mm"
+		},
+		"width": {
+			"unit": "mm"
+		},
+		"depth": {
+			"unit": "mm"
+		},
+		"size": {
+			"unit": "mm",
+			"dimensions": ["height", "width", "depth"]
+		},
+		"temperature": {
+			"unit": "°C"
+		},
+		"humidity": {
+			"unit": "%RH"
+		}
+	}
+}

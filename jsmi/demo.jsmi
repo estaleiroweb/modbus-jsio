@@ -1,0 +1,91 @@
+{
+	"definitions": {
+		"imports": [],
+		"name": {
+			"id": null,
+			"vendor": "",
+			"serie": null,
+			"model": "",
+			"version": null,
+			"other_details": null
+		},
+		"identity": {
+			"last-updated": "2022-08-27T09:00:00-03:00",
+			"revision": "1.0.0",
+			"product-name": null,
+			"product-number": null,
+			"organization": null,
+			"contact-info": {
+				"address": [{
+					"name": null,
+					"street": null,
+					"num": null,
+					"neibohood": null,
+					"city": null,
+					"state": null,
+					"country": null,
+					"postal": null,
+					"tel": []
+				}],
+				"tel": [],
+				"e-mail": [],
+				"url": []
+			},
+			"features": [],
+			"description": []
+		},
+		"comunication": [{
+				"protocol": "modbus",
+				"link": "RS485",
+				"mode": "RTU",
+				"address": {
+					"defaul": 1,
+					"range": [1, 247]
+				},
+				"location": "bottom",
+				"pins": ["RS485 B-", "RS485 A+", "DC-(5~30V)", "DC+(5~30V)"]
+			},
+			{
+				"protocol": "modbus",
+				"link": "RS485",
+				"mode": "RTU",
+				"address": {
+					"defaul": 1,
+					"range": [1, 247]
+				}
+			}
+		],
+		"parameters": {
+			"work": {
+				"voltage": {
+					"DC": [
+						[5, 30], 48
+					],
+					"AC": [110, 220]
+				},
+				"temperature": {
+					"unit": "°C",
+					"range": [-40, 85]
+				},
+				"humidity": {
+					"unit": "%RH",
+					"range": [0, 95]
+				}
+			},
+			"sensor": {
+				"temperature": {
+					"unit": "°C",
+					"range": [-40, 60],
+					"precision": [-0.5, 0.5],
+					"resolution": 0.1
+				},
+				"humidity": {
+					"unit": "%RH",
+					"range": [0, 80],
+					"precision": [-3, 3],
+					"resolution": 0.1
+				}
+			}
+		}
+	}
+}

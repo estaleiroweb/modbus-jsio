@@ -7,31 +7,79 @@ use EstaleiroWeb\Traits\GetSet;
 class MbTypeAny {
 	use GetSet;
 
-	/**
-	 * storages
-	 *
-	 * @var array associative array Bytes=>[configuration]]
-	 */
-	protected $storages = [
-		2 => [
-			'hl' => ['descr' => 'hi 8bits-low 8bits', 'seq' => [1, 0,]],
-			'lh' => ['descr' => 'low 8bits-hi 8bits', 'seq' => [0, 1,]],
+	public const NUM_RANGES = [
+		'bit' => [
+			'bits' =>   1,
+			'bytes' =>   1,
+			'signed' =>   [0, -1], // 0x00~0x71
+			'unsigned' => [0, 1],  // 0x00~0x01
 		],
-		4 => [
-			'hl'  => ['descr' => 'Hi 16bits-Low 16bits 2B(hl)', 'seq' => [3, 2, 1, 0,]],
-			'lh'  => ['descr' => 'Low 16bits-Hi 16bits 2B(lh)', 'seq' => [0, 1, 2, 3,]],
-			'hlr' => ['descr' => 'Hi 16bits-Low 16bits 2B(lh)', 'seq' => [2, 3, 0, 1,]],
-			'lhr' => ['descr' => 'Low 16bits-Hi 16bits 2B(hl)', 'seq' => [1, 0, 3, 2,]],
+		'byte' => [
+			'bits' =>   8,
+			'bytes' =>   1,
+			'signed' =>   [-128, 127], // 0x80~0x7F
+			'unsigned' => [0, 255],    // 0x00~0xFF
 		],
-		8 => [
-			'hl'   => ['descr' => 'Hi 32bits-Low 32bits 4B(hl)', 'seq' => [7, 6, 5, 4, 3, 2, 1, 0,]],
-			'lh'   => ['descr' => 'Low 32bits-Hi 32bits 4B(lh)', 'seq' => [0, 1, 2, 3, 4, 5, 6, 7,]],
-			'hli'  => ['descr' => 'Hi 32bits-Low 32bits 4B(lh)', 'seq' => [4, 5, 6, 7, 0, 1, 2, 3,]],
-			'lhi'  => ['descr' => 'Low 32bits-Hi 32bits 4B(hl)', 'seq' => [3, 2, 1, 0, 7, 6, 5, 4,]],
-			'hlr'  => ['descr' => 'Hi 32bits-Low 32bits 4B(lhr)', 'seq' => [5, 4, 7, 6, 1, 0, 3, 2,]],
-			'lhr'  => ['descr' => 'Low 32bits-Hi 32bits 4B(hlr)', 'seq' => [2, 3, 0, 1, 6, 7, 4, 5,]],
-			'hlir' => ['descr' => 'Hi 32bits-Low 32bits 4B(hlr)', 'seq' => [1, 0, 3, 2, 5, 4, 7, 6,]],
-			'lhir' => ['descr' => 'Low 32bits-Hi 32bits 4B(lhr)', 'seq' => [6, 7, 4, 5, 2, 3, 0, 1,]],
+		'int16' => [
+			'bits' =>   16,
+			'bytes' =>   2,
+			'signed' => [-32768, 32767], // 0x8000~0x7FFF
+			'unsigned' => [0, 65535],   // 0x0000~0xFFFF
+		],
+		'int24' => [
+			'bits' =>   24,
+			'bytes' =>   3,
+			'signed' => [-8388608, 8388607], // 0x800000~0x7FFFFF
+			'unsigned' => [0, 16777215],     // 0x000000~0xFFFFFF
+		],
+		'int32' => [
+			'bits' =>   32,
+			'bytes' =>   4,
+			'signed' =>   [-2147483648, 2147483647], // 0x80000000~0x7FFFFFFF
+			'unsigned' => [0, 4294967295],           // 0x00000000~0xFFFFFFFF
+		],
+		'int64' => [
+			'bits' =>   64,
+			'bytes' =>   8,
+			'signed' =>   [-9223372036854775808, 9223372036854775807], // 0x8000000000000000~0x7FFFFFFFFFFFFFFF
+			'unsigned' => [0, 18446744073709551615],                   // 0x0000000000000000~0xFFFFFFFFFFFFFFFF
+		],
+		'float' => [
+			'bits' =>   32,
+			'bytes' =>   4,
+			'signed' =>   [-3.402823466E+38, -1.175494351E-38],
+			'unsigned' => [1.175494351E-38, 3.402823466E+38],
+		],
+		'double' => [
+			'bits' =>   64,
+			'bytes' =>   8,
+			'signed' =>   [-1.7976931348623157E+308, -2.2250738585072014E-308],
+			'unsigned' => [2.2250738585072014E-308, 1.7976931348623157E+308],
+		],
+		'timestamp' => [
+			'bits' =>   16,
+			'bytes' =>   4,
+			'unsigned' => ['1970-01-01 00:00:01.000000 UTC', '2038-01-19 03:14:07.999999 UTC'],
+		],
+		'datetime' => [
+			'bits' =>   32,
+			'bytes' =>   4,
+			'unsigned' => ['1000-01-01 00:00:00.000000', '9999-12-31 23:59:59.999999'],
+		],
+		'date' => [
+			'bits' =>   16,
+			'bytes' =>   4,
+			'unsigned' => ['1000-01-01', '9999-12-31'],
+		],
+		'time' => [
+			'bits' =>   16,
+			'bytes' =>   4,
+			'unsigned' => ['-838:59:59.000000', '838:59:59.999999'],
+		],
+		'year4' => [
+			'bits' =>   8,
+			'bytes' =>   1,
+			'unsigned' => [1901, 2155],
 		],
 	];
 	/**
@@ -41,7 +89,7 @@ class MbTypeAny {
 	 */
 	protected $readonly = [
 		'unit' => 'byte',
-		'store' => 'hl',
+		'unpack' => 'A',
 		'raw' => null,
 		'aRaw' => [],
 		'len' => null,
@@ -92,12 +140,6 @@ class MbTypeAny {
 		}
 		if ($c <= 2) return chr(hexdec($val));
 		return $this->setHex(chunk_split($val, 2), true);
-	}
-	public function setStorage($val) {
-		$len = $this->len;
-		if ($len) {
-		}
-		return $this;
 	}
 	public function setLen($val) {
 		$val = (int)$val;

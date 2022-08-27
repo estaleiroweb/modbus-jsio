@@ -1,9 +1,9 @@
 <?php
+#declare(strict_types=1);
 
 namespace EstaleiroWeb\Modbus;
 
 use Exception;
-use SimpleXMLElement;
 use EstaleiroWeb\Traits\GetSet;
 use EstaleiroWeb\Traits\FuncArray;
 
@@ -17,6 +17,30 @@ use ModbusTcpClient\Utils\Endian;
 class Modbus {
 	use GetSet, FuncArray;
 
+	/**
+	 * errorCodes
+	 *
+	 * - Example packet: \xda\x87\x00\x00\x00\x03\x01\x81\x03
+	 * - \xda\x87 - transaction id
+	 * - \x00\x00 - protocol id
+	 * - \x00\x03 - number of bytes in the message (PDU = ProtocolDataUnit) to follow
+	 * - \x01 - unit id
+	 * - \x81 - function code + 128 (exception bitmask)
+	 * - \x03 - error code
+	 * 
+	 * @var array
+	 */
+	protected $errorCodes = [
+		1=>'Illegal function',
+		2=>'Illegal data address',
+		3=>'Illegal data value',
+		4=>'Server failure',
+		5=>'Acknowledge',
+		6=>'Server busy',
+		10=>'Gateway path unavailable',
+		11=>'Gateway targeted device failed to respond',
+		128=>'BitMask',		
+	];
 	protected $readonly = [
 		'modes' => ['TCP', 'UDP', 'RTU', 'ASCII'],
 		'returns' => ['json', 'xml', 'text', 'table'],
@@ -68,7 +92,6 @@ class Modbus {
 				$arr = ['ip', 'serial'];
 				foreach ($arr as $k) {
 					$this->$k = $item;
-					if ($this->$k) break;
 				}
 			}
 		}
@@ -288,5 +311,8 @@ class Modbus {
 			exit(0);
 		}
 		return $out;
+	}
+	public function toHex($val) {
+		return unpack('H*', $val)[1];
 	}
 }

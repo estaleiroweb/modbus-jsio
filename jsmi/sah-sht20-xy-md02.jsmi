@@ -1,0 +1,201 @@
+{
+	"imports": ["base-modbus"],
+	"name": {
+		"id": null,
+		"key": "sah-sht20-xy-md02",
+		"vendor": "sah",
+		"serie": "SHT20",
+		"model": "XY-MD02",
+		"version": null,
+		"other_details": null
+	},
+	"identity": {
+		"updated": "2022-08-27T09:00:00-03:00",
+		"revision": "1.0",
+		"product": {
+			"name": "Modbus RTU RS485 SHT20 Temperature Humidity Transmitter",
+			"number": "XY-MD02"
+		},
+		"size": [65, 46, 28.5],
+		"organization": null,
+		"contact": {
+			"address": [{
+				"name": null,
+				"street": null,
+				"num": null,
+				"neibohood": null,
+				"city": null,
+				"state": null,
+				"country": null,
+				"postal": null,
+				"tel": []
+			}],
+			"tel": [],
+			"e-mail": [],
+			"url": [
+				"http://www.sah.co.rs"
+			]
+		},
+		"features": [],
+		"description": [
+			"Product adopts industrial-grade chip, high-precision SHT20 temperature and humidity sensors, ensure the products with good reliability, high precision and interchangeability. RS485 hardware interface (with the lightning protection design), the protocol layer compatible with standard industrial Modbus RTU protocol.",
+			"This product integrating MODBUS protocol and ordinary UART communication protocol, users can choose communication protocols, UART communication support automatic report function (Connect the RS485 serial interface mode tool by automatically output temperature and humidity)."
+		]
+	},
+	"comunication": [{
+		"protocol": "modbus",
+		"link": "RS485",
+		"mode": "RTU",
+		"address": {
+			"defaul": 1,
+			"range": [1, 247]
+		},
+		"location": "bottom",
+		"pins": ["RS485 B-", "RS485 A+", "DC-(5~30V)", "DC+(5~30V)"]
+	}],
+	"parameters": {
+		"work": {
+			"voltage": {
+				"DC": [
+					[5, 30], 48
+				],
+				"AC": [110, 220]
+			},
+			"temperature": {
+				"unit": "°C",
+				"range": [-40, 85]
+			},
+			"humidity": {
+				"unit": "%RH",
+				"range": [0, 95]
+			}
+		},
+		"sensor": {
+			"temperature": {
+				"unit": "°C",
+				"range": [-40, 60],
+				"precision": [-0.5, 0.5],
+				"resolution": 0.1
+			},
+			"humidity": {
+				"unit": "%RH",
+				"range": [0, 80],
+				"precision": [-3, 3],
+				"resolution": 0.1
+			}
+		}
+	},
+	"using": [
+		"Connect signal receiver such as for Arduino to RS485 terminal.",
+		"Input power supply at power terminal.",
+		"According to the acquired data, the data is processed differently according to actual needs"
+	],
+	"notes": [
+		"Users need to prepare their own ModBus debugging tool and RS485 debugger.",
+		"Users needs to complete write code according to the communication protocol and commands if using the controller to receive data."
+	],
+	"modebus": {
+		"store": "be",
+		"fc": {
+			"3": {},
+			"4": {},
+			"6": {},
+			"16": {}
+		},
+		"address": {
+			"input_register": {
+				"1": {
+					"name": "temperature",
+					"description": "Temperature",
+					"bytes": 2,
+					"type": {
+						"decimal": {
+							"unsigned": 1,
+							"precision": 1
+						}
+					}
+				},
+				"2": {
+					"name": "humidity",
+					"description": "Humidity",
+					"bytes": 2,
+					"type": {
+						"decimal": {
+							"unsigned": 1,
+							"precision": 1
+						}
+					}
+				}
+			},
+			"holding_register": {
+				"257": {
+					"name": "device_address",
+					"hex": "0101",
+					"description": "Device Address",
+					"bytes": 2,
+					"type": {
+						"uint2": {
+							"default": 0
+						}
+					}
+				},
+				"258": {
+					"name": "baud_rate",
+					"hex": "0102",
+					"description": "Baud Rate",
+					"bytes": 2,
+					"type": {
+						"enum": {
+							"default": 0,
+							"source": {
+								"0": 9600,
+								"1": 14400,
+								"2": 19200
+							}
+						}
+					}
+				},
+				"259": {
+					"name": "temperature_correction",
+					"hex": "0103",
+					"description": "Temperature Correction -10°C ~ 10°C",
+					"bytes": 2,
+					"type": {
+						"uint2": {
+							"default": 0
+						}
+					}
+				},
+				"260": {
+					"name": "humidity_correction",
+					"hex": "0104",
+					"description": "Humidity Correction -10%RH ~ 10%RH",
+					"bytes": 2,
+					"type": {
+						"uint2": {
+							"default": 0
+						}
+					}
+				}
+			}
+		},
+		"tree": {
+			"def": "tree",
+			"children": {
+				"sensor": {
+					"def": "list",
+					"children": ["temperature", "humidity"]
+				},
+				"config": {
+					"def": "tree",
+					"children": {
+						"address": "device_address",
+						"baud": "baud_rate",
+						"temperature": "temperature_correction",
+						"humidity": "humidity_correction"
+					}
+				}
+			}
+		}
+	}
+}
