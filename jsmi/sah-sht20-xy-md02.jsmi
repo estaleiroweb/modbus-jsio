@@ -9,6 +9,8 @@
 		"version": null,
 		"other_details": null
 	},
+	"refer": [
+	],
 	"identity": {
 		"updated": "2022-08-27T09:00:00-03:00",
 		"revision": "1.0",
@@ -180,19 +182,38 @@
 			}
 		},
 		"tree": {
-			"def": "tree",
-			"children": {
+			"idx": 0,
+			"defChild": "tree",
+			"child": {
 				"sensor": {
-					"def": "list",
-					"children": ["temperature", "humidity"]
+					"idx": 0,
+					"defChild": "list",
+					"child": ["temperature", "humidity"]
 				},
 				"config": {
-					"def": "tree",
-					"children": {
-						"address": "device_address",
-						"baud": "baud_rate",
-						"temperature": "temperature_correction",
-						"humidity": "humidity_correction"
+					"idx": 1,
+					"defChild": "tree",
+					"child": {
+						"address": {
+							"idx": 0,
+							"defChild": "value",
+							"child": "device_address"
+						},
+						"baud": {
+							"idx": 1,
+							"defChild": "value",
+							"child": "baud_rate"
+						},
+						"temperature": {
+							"idx": 2,
+							"defChild": "value",
+							"child": "temperature_correction"
+						},
+						"humidity": {
+							"idx": 3,
+							"defChild": "value",
+							"child": "humidity_correction"
+						}
 					}
 				}
 			}

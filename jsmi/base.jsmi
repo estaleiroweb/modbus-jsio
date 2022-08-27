@@ -343,8 +343,7 @@
 	},
 	"storage": {
 		"mo": {
-			"description": "machine byte order",
-			"order": [0, 1]
+			"description": "machine byte order"
 		},
 		"be": {
 			"description": "big endian byte order",
