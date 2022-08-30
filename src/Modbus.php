@@ -4,6 +4,9 @@
 namespace EstaleiroWeb\Modbus;
 
 use Exception;
+use EstaleiroWeb\Modbus\Base\Vars;
+use EstaleiroWeb\Modbus\FC\FC;
+use EstaleiroWeb\Modbus\Types\MbTypeAny;
 use EstaleiroWeb\Traits\GetSet;
 use EstaleiroWeb\Traits\FuncArray;
 
@@ -31,32 +34,17 @@ class Modbus {
 	 * @var array
 	 */
 	protected $errorCodes = [
-		1=>'Illegal function',
-		2=>'Illegal data address',
-		3=>'Illegal data value',
-		4=>'Server failure',
-		5=>'Acknowledge',
-		6=>'Server busy',
-		10=>'Gateway path unavailable',
-		11=>'Gateway targeted device failed to respond',
-		128=>'BitMask',		
+		1 => 'Illegal function',
+		2 => 'Illegal data address',
+		3 => 'Illegal data value',
+		4 => 'Server failure',
+		5 => 'Acknowledge',
+		6 => 'Server busy',
+		10 => 'Gateway path unavailable',
+		11 => 'Gateway targeted device failed to respond',
+		128 => 'BitMask',
 	];
 	protected $readonly = [
-		'modes' => ['TCP', 'UDP', 'RTU', 'ASCII'],
-		'returns' => ['json', 'xml', 'text', 'table'],
-		'fcs' => [
-			1 =>  ['fn' => 'ReadCoils', 'bits' => 1, 'permition' => 'ro', 'descr' => 'Read Coils',],
-			2 =>  ['fn' => 'ReadInputDiscretes', 'bits' => 1, 'permition' => 'ro', 'descr' => 'Read Input Discretes',],
-			3 =>  ['fn' => 'ReadHoldingRegisters', 'bits' => 16, 'permition' => 'ro', 'descr' => 'Read Holding Registers',],
-			4 =>  ['fn' => 'ReadInputRegisters', 'bits' => 16, 'permition' => 'ro', 'descr' => 'Read Input Registers',],
-			5 =>  ['fn' => 'WriteSingleCoil', 'bits' => 1, 'permition' => 'rw', 'descr' => 'Write Single Coil',],
-			6 =>  ['fn' => 'WriteSingleRegister', 'bits' => 16, 'permition' => 'rw', 'descr' => 'Write Single Register',],
-			15 => ['fn' => 'WriteMultipleCoils', 'bits' => 1, 'permition' => 'rw', 'descr' => 'Write Multiple Coils',],
-			16 => ['fn' => 'WriteMultipleRegisters', 'bits' => 16, 'permition' => 'rw', 'descr' => 'Write Multiple Registers',],
-			22 => ['fn' => 'MaskWriteRegister', 'bits' => 16, 'permition' => 'rw', 'descr' => 'Mask Write Register',],
-			23 => ['fn' => 'ReadWriteMultipleRegisters', 'bits' => 16, 'permition' => 'rw', 'descr' => 'Read / Write Multiple Registers',],
-		],
-
 		'mode' => null,
 		'ip' => null,
 		'port' => 502,
@@ -65,23 +53,24 @@ class Modbus {
 		'doc' => [],
 		'log' => [],
 		'debug' => null,
-		'elapsed' => 0,
 	];
 	protected $protect = [
+		'elapsed' => 0,
+		'endianess' => 1,
 		'connectTimeout' => 1.5, // seconds timeout when establishing connection to the server
 		'writeTimeout' => 0.5, // seconds timeout when writing/sending packet to the server
-		'readTimeout' => 1.0, // seconds timeout when waiting response from server
+		'readTimeout' => 0.5, // seconds timeout when waiting response from server
 	];
 	protected $result = [];
 	protected $conn;
 
 	/**
 	 * __construct
-	 * @param string|array Mode or array of arguments readonly with setters method
-	 * @param mixed If parameter 1 is a mode, see int_<modes> methods
+	 * @param string|array $mode_conn Mode or array of arguments readonly with setters method
+	 * @param mixed $param If parameter 1 is a mode, see int_<modes> methods
 	 * @return void
 	 */
-	public function __construct() {
+	public function __construct($mode_conn = null, $param = null) {
 		$args = func_get_args();
 		$item = array_shift($args);
 		if (is_array($item)) $this->init($item);
@@ -107,12 +96,12 @@ class Modbus {
 	}
 
 	private function _setByReadonlyArray($key, $val, $src) {
-		if (in_array($val, $this->$src)) $this->readonly[$key] = $val;
-		if (key_exists($val, $this->$src)) $this->readonly[$key] = $this->$src[$val];
+		if (in_array($val, $src)) $this->readonly[$key] = $val;
+		if (key_exists($val, $src)) $this->readonly[$key] = $src[$val];
 	}
 
 	public function setMode($val) {
-		$this->_setByReadonlyArray('mode', strtoupper($val), 'modes');
+		$this->_setByReadonlyArray('mode', strtoupper($val), Vars::$modes);
 		return $this;
 	}
 	public function setIP($val) {
@@ -141,7 +130,7 @@ class Modbus {
 		return $this;
 	}
 	public function setReturn($val) {
-		$this->_setByReadonlyArray('return', strtolower($val), 'returns');
+		$this->_setByReadonlyArray('return', strtolower($val), Vars::$returns);
 		return $this;
 	}
 	public function setLog($val) {
@@ -191,18 +180,49 @@ class Modbus {
 		$this->conn->close();
 		$this->conn = null;
 	}
-	public function fc($fc, $addr = 256, $quant = 1, $uId = 1) {
+	public function fc($fc, $addr = 1, $quant = 1, $uId = 1) {
 		if (is_null($this->conn)) return $this;
+		$startTime = microtime(true) * 1000;
 
-		if ($fc == 4) {
-			$packet = new ReadInputRegistersRequest($addr, $quant, $uId);
-		} elseif ($fc == 3) {
-			$fc = 3;
-			$packet = new ReadHoldingRegistersRequest($addr, $quant, $uId);
-		} else return $this;
+		$packet = FC::objRequest([$fc, $addr, $quant, $uId]);
+
+		$endianess = (int)MbTypeAny::BIG_ENDIAN_LOW_WORD_FIRST;
+		MbTypeAny::$defaultEndian = $endianess;
 
 		$endianess = (int)Endian::BIG_ENDIAN_LOW_WORD_FIRST;
 		Endian::$defaultEndian = $endianess;
+
+		$this->log = "{$this->ip}:{$this->ip}/#$uId-FC$fc@{$addr}[$quant] endianess:{$endianess}";
+		$this->log = 'Send(hex): ' . $packet->toHex();
+
+		$this->result = [];
+		$this->elapsed = 0;
+
+		try {
+			$binaryData = $this->conn->sendAndReceive($packet);
+			$result = FC::parserResponse($binaryData);
+			$this->log = 'Received(hex): ' . unpack('H*', $binaryData)[1];
+		} catch (Exception $exception) {
+			$result = null;
+			$this->log = 'An exception occurred';
+			$this->log = $exception->getMessage();
+			$this->log = $exception->getTraceAsString();
+		}
+
+		$this->elapsed = (microtime(true) * 1000) - $startTime;
+		return $result;
+	}
+	public function fc_old($fc, $addr = 1, $quant = 1, $uId = 1) {
+		if (is_null($this->conn)) return $this;
+
+		$packet = FC::objRequest([$fc, $addr, $quant, $uId]);
+
+		$endianess = (int)MbTypeAny::BIG_ENDIAN_LOW_WORD_FIRST;
+		MbTypeAny::$defaultEndian = $endianess;
+
+		$endianess = (int)Endian::BIG_ENDIAN_LOW_WORD_FIRST;
+		Endian::$defaultEndian = $endianess;
+
 		$this->log = "{$this->ip}:{$this->ip}/#$uId-FC$fc@{$addr}[$quant] endianess:{$endianess}";
 		$this->log = 'Send(hex): ' . $packet->toHex();
 
@@ -212,11 +232,16 @@ class Modbus {
 
 		try {
 			$binaryData = $this->conn->sendAndReceive($packet);
+			$resp = FC::parserResponse($binaryData);
+			$resp['hex'] = unpack('H*', $resp['data'])[1];
+			print_r($resp);
 
 			$this->log = 'Received(hex): ' . unpack('H*', $binaryData)[1];
 
 			/** @var $response ReadHoldingRegistersResponse */
-			$response = ResponseFactory::parseResponseOrThrow($binaryData)->withStartAddress($addr);
+			$r = ResponseFactory::parseResponseOrThrow($binaryData);
+			$response = $r->withStartAddress($addr);
+			//print_r([__LINE__ => $response]);
 
 			foreach ($response as $address => $word) {
 				$doubleWord = isset($response[$address + 1]) ? $response->getDoubleWordAt($address) : null;
@@ -267,7 +292,75 @@ class Modbus {
 		$this->elapsed = round(microtime(true) * 1000) - $startTime;
 		return $this->result;
 	}
+	static public function scan_ips($v = 4, $port = 502) {
+		$ipa = preg_grep(
+			'/^(127\..*\/8|::[0-9a-z]\/128)$/i',
+			explode(
+				"\n",
+				trim(`ip a | grep 'inet' | sed -r 's/^\\s*inet.? ([^ ]+).*/\\1/'`)
+			),
+			PREG_GREP_INVERT
+		);
+		if ($v == 4) $ipa = preg_grep('/\./', $ipa);
+		elseif ($v == 4) $ipa = preg_grep('/:/', $ipa);
+		$out = [];
+		foreach ($ipa as $ip) {
+			$nmap = `sudo nmap -sUT $ip -p $port`;
+			$nmap = preg_grep('/ open /', explode('Nmap scan report', $nmap));
+			foreach ($nmap as $k => $v) if (
+				preg_match(
+					'/^.*?(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|[0-9a-f:]+:[0-9a-f:]*)/i',
+					$v,
+					$ret
+				)
+			) {
+				preg_match_all('/\b(tcp|udp) +open/', $v, $r);
+				$out[$ret[1]] = $r[1];
+			}
+		}
+		return $out;
+	}
+	public function scan($fcs = null, $addrs = null, $nodes = null) {
+		static $head = true;
 
+		if (!$fcs) $fcs = range(1, 4);
+		else $fcs = (array)$fcs;
+		if (!$addrs) $addrs = range(0, 9998);
+		else $addrs = (array)$addrs;
+		if (!$nodes) $nodes = [1];
+		else $nodes = (array)$nodes;
+		$lastAddr = end($addrs);
+		$this->connect();
+		$log = null;
+		foreach ($nodes as $node) {
+			foreach ($fcs as $fc) {
+				foreach ($addrs as $addr) {
+					print " #$node/FC$fc($addr/$lastAddr)\r";
+					$r = $this->fc($fc, $addr, 1, $node);
+					if ($r) {
+						if ($head) {
+							$head = false;
+							print "Node FC Addr Len Data TId___ Elapse(ms)\n";
+						}
+						print
+							str_pad($r['node'], 4, ' ', STR_PAD_LEFT) . ' ' .
+							str_pad($r['fc'], 2, ' ', STR_PAD_LEFT) . ' ' .
+							str_pad($addr, 4, ' ', STR_PAD_LEFT) . ' ' .
+							str_pad($r['len'], 3, ' ', STR_PAD_LEFT) . ' ' .
+							str_pad(unpack('H*', $r['data'])[1], 4, ' ', STR_PAD_LEFT) . ' ' .
+							str_pad($r['transactionId'], 6, ' ', STR_PAD_LEFT) . ' ' .
+							$this->elapsed."\n";
+						$log = $this->log;
+					}
+				}
+			}
+		}
+		$head = true;
+		print "                   \r";
+		print_r($log);
+
+		return $this;
+	}
 	protected function return_main($val = null, $print = false) {
 		if (is_null($val)) $val = $this->result;
 		return call_user_func([$this, 'return_' . $this->return], [

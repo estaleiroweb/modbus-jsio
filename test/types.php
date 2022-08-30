@@ -176,8 +176,3 @@ foreach ($types as $k => $descr) {
 		print " Val: $js\n";
 	}
 }
-exit;
-$m = new Modbus('192.168.1.115');
-$r = $m->connect()->fc($argv[1] ?? 4, $argv[2] ?? 1, 2);
-print $m();
-//print_r(['result' => $r, 'log' => $m->log,]);
