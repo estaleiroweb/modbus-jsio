@@ -101,7 +101,7 @@ class Modbus {
 	}
 
 	public function setMode($val) {
-		$this->_setByReadonlyArray('mode', strtoupper($val), Vars::$modes);
+		$this->_setByReadonlyArray('mode', strtoupper($val), Vars::MODES);
 		return $this;
 	}
 	public function setIP($val) {
@@ -130,7 +130,7 @@ class Modbus {
 		return $this;
 	}
 	public function setReturn($val) {
-		$this->_setByReadonlyArray('return', strtolower($val), Vars::$returns);
+		$this->_setByReadonlyArray('return', strtolower($val), Vars::RETURNS);
 		return $this;
 	}
 	public function setLog($val) {

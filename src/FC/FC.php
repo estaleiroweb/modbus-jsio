@@ -7,7 +7,7 @@ use EstaleiroWeb\Modbus\Base\Vars;
 use EstaleiroWeb\Modbus\Types\MbTypeAny;
 
 class FC {
-	static public $fcs_names = [
+	public const FCS_NAMES = [
 		'read_coils' => 1,
 		'read_input_discretes' => 2,
 		'read_holding_registers' => 3,
@@ -19,7 +19,7 @@ class FC {
 		'mask_write_register' => 22,
 		'read_write_multiple_registers' => 23,
 	];
-	static public $fcs = [
+	public const FCS = [
 		1 => [
 			'name' => 'read_coils',
 			'class' => 'ReadCoils',
@@ -236,7 +236,7 @@ class FC {
 	}
 	static private function init($key, $args) {
 		$fc = array_shift($args);
-		$fcs = self::$fcs[$fc];
+		$fcs = self::FCS[$fc];
 		if (!$fc) throw new \RuntimeException("Unknown function code '{$fc}' read from response packet");
 		elseif (!key_exists($k = 'class', $fcs)) throw new \RuntimeException("function code '{$fc}' without class");
 		else {
@@ -266,9 +266,9 @@ class FC {
 			$node = MbTypeAny::parseByte($binaryString[6]);
 			$errorKey = "FC: $fc, Transaction: $transactionId, Len: $length, Node: $node";
 			if (strlen($binaryString) < 9) throw new \RuntimeException("$errorKey, Response data length too short (<9)");
-			elseif (($fc & Vars::$errors['exception_bitmask']) > 0) {
+			elseif (($fc & Vars::ERRORS['exception_bitmask']) > 0) {
 				//function code is in low bits of exception
-				$fc -= Vars::$errors['exception_bitmask'];
+				$fc -= Vars::ERRORS['exception_bitmask'];
 				$exceptionCode = MbTypeAny::parseByte($binaryString[8]);
 				throw new \RuntimeException("$errorKey, exceptionCode: $exceptionCode");
 			} else {

@@ -7,38 +7,182 @@ use ModbusTcpClient\Utils\Charset;
 
 class MbTypeAny {
 	use GetSet;
-	const MAX_VALUE_UINT16 = 0xFFFF; // 65535 as dec
-	const MIN_VALUE_UINT16 = 0x0;
+	public const MAX_VALUE_UINT16 = 0xFFFF; // 65535 as dec
+	public const MIN_VALUE_UINT16 = 0x0;
 
-	const MAX_VALUE_INT16 = 0x7FFF; // 32767 as dec
-	const MIN_VALUE_INT16 = -32768; // 0x8000 as hex
+	public const MAX_VALUE_INT16 = 0x7FFF; // 32767 as dec
+	public const MIN_VALUE_INT16 = -32768; // 0x8000 as hex
 
-	const MAX_VALUE_UINT32 = 0xFFFFFFFF; // 4294967295 as dec
-	const MIN_VALUE_UINT32 = 0x0; // 0 as dec
+	public const MAX_VALUE_UINT32 = 0xFFFFFFFF; // 4294967295 as dec
+	public const MIN_VALUE_UINT32 = 0x0; // 0 as dec
 
-	const MAX_VALUE_INT32 = 0x7FFFFFFF; // 2147483647 as dec
-	const MIN_VALUE_INT32 = -2147483648; // 0x80000000 as hex
+	public const MAX_VALUE_INT32 = 0x7FFFFFFF; // 2147483647 as dec
+	public const MIN_VALUE_INT32 = -2147483648; // 0x80000000 as hex
 
-	const MAX_VALUE_BYTE = 0xFF;
-	const MIN_VALUE_BYTE = 0x0;
+	public const MAX_VALUE_BYTE = 0xFF;
+	public const MIN_VALUE_BYTE = 0x0;
 
-	const BIG_ENDIAN = 1;
-	const LITTLE_ENDIAN = 2;
+	public const BIG_ENDIAN = 1;
+	public const LITTLE_ENDIAN = 2;
 	/**
 	 * Double words (32bit types) consist of two 16bit words. Different PLCs send double words differently over wire
 	 * So 0xDCBA can be sent low word (0xBA) first 0xBADC or high word (0xDC) first 0xDCBA. High word first on true big/little endian
 	 * and does not have separate flag
 	 */
-	const LOW_WORD_FIRST = 4;
+	public const LOW_WORD_FIRST = 4;
 	/**
 	 * Used by WAGO 750-XXX as endianness.
 	 *
 	 * When bytes for little endian are in 'ABCD' order then Big Endian Low Word First is in 'BADC' order
 	 * This mean that high word (BA) is first and low word (DC) for double word is last and bytes in words are in big endian order.
 	 */
-	const BIG_ENDIAN_LOW_WORD_FIRST = self::BIG_ENDIAN | self::LOW_WORD_FIRST;
+	public const BIG_ENDIAN_LOW_WORD_FIRST = self::BIG_ENDIAN | self::LOW_WORD_FIRST;
 	public static int $defaultEndian = self::BIG_ENDIAN_LOW_WORD_FIRST;
 
+	public const TRUNPACK = [
+		'descr' => [
+			'c' => 'signed char',
+			's' => 'signed short (always 16 bit, machine byte order)',
+			'i' => 'signed integer (machine dependent size and byte order)',
+			'l' => 'signed long (always 32 bit, machine byte order)',
+			'q' => 'signed long long (always 64 bit, machine byte order)',
+			'C' => 'unsigned char',
+			'S' => 'unsigned short (always 16 bit, machine byte order)',
+			'I' => 'unsigned integer (machine dependent size and byte order)',
+			'L' => 'unsigned long (always 32 bit, machine byte order)',
+			'Q' => 'unsigned long long (always 64 bit, machine byte order)',
+			'f' => 'float (machine dependent size and representation)',
+			'd' => 'double (machine dependent size and representation)',
+
+			'n' => 'unsigned short (always 16 bit, big endian byte order)',
+			'N' => 'unsigned long (always 32 bit, big endian byte order)',
+			'J' => 'unsigned long long (always 64 bit, big endian byte order)',
+			'G' => 'float (machine dependent size, big endian byte order)',
+			'E' => 'double (machine dependent size, big endian byte order)',
+
+			'v' => 'unsigned short (always 16 bit, little endian byte order)',
+			'V' => 'unsigned long (always 32 bit, little endian byte order)',
+			'P' => 'unsigned long long (always 64 bit, little endian byte order)',
+			'g' => 'float (machine dependent size, little endian byte order)',
+			'e' => 'double (machine dependent size, little endian byte order)',
+
+			'H' => 'Hex string, high nibble first',
+			'h' => 'Hex string, low nibble first',
+
+			'a' => 'NUL-padded string',
+			'Z' => 'NUL-padded string',
+			'A' => 'SPACE-padded string',
+			'x' => 'NUL byte',
+			'X' => 'Back up one byte',
+			'@' => 'NUL-fill to absolute position',
+
+			'mo' => 'machine byte order',
+			'be' => 'big endian byte order',
+			'le' => 'little endian byte order',
+			'int' => 'integer by bits',
+			'dec' => 'float/double',
+		],
+		'mo' => [
+			'int' => [
+				'signed' => [
+					1 => 'c',
+					2 => 's',
+					//4 => 'i',
+					4 => 'l',
+					8 => 'q',
+				],
+				'unsigned' => [
+					1 => 'C',
+					2 => 'S',
+					//4 => 'I',
+					4 => 'L',
+					8 => 'Q',
+				],
+			],
+			'dec' => [
+				'signed' => [
+					1 => 'f',
+					2 => 'f',
+					3 => 'f',
+					4 => 'f',
+					8 => 'd',
+				],
+				'unsigned' => [
+					1 => 'f',
+					2 => 'f',
+					3 => 'f',
+					4 => 'f',
+					8 => 'd',
+				],
+			],
+		],
+		'be' => [
+			'int' => [
+				'descr' => 'integer by bits',
+				'signed' => [
+					1 => 'c',
+					2 => 'n',
+					4 => 'N',
+					8 => 'J',
+				],
+				'unsigned' => [
+					1 => 'C',
+					2 => 'n',
+					4 => 'N',
+					8 => 'J',
+				],
+			],
+			'dec' => [
+				'signed' => [
+					1 => 'G',
+					2 => 'G',
+					3 => 'G',
+					4 => 'G',
+					8 => 'E',
+				],
+				'unsigned' => [
+					1 => 'G',
+					2 => 'G',
+					3 => 'G',
+					4 => 'G',
+					8 => 'E',
+				],
+			],
+		],
+		'le' => [
+			'int' => [
+				'descr' => 'integer by bits',
+				'signed' => [
+					1 => 'C',
+					2 => 'v',
+					4 => 'V',
+					8 => 'P',
+				],
+				'unsigned' => [
+					1 => 'C',
+					2 => 'v',
+					4 => 'V',
+					8 => 'P',
+				],
+			],
+			'dec' => [
+				'signed' => [
+					1 => 'g',
+					2 => 'g',
+					3 => 'g',
+					4 => 'g',
+					8 => 'e',
+				],
+				'unsigned' => [
+					1 => 'g',
+					2 => 'g',
+					3 => 'g',
+					4 => 'g',
+					8 => 'e',
+				],
+			],
+		],
+	];
 	public const NUM_RANGES = [
 		'bit' => [
 			'bits' =>   1,
@@ -144,6 +288,43 @@ class MbTypeAny {
 	public function __invoke($val = null) {
 		return $this->hex($val);
 	}
+	private static function getInt16Format(int $fromEndian = null): string {
+		$fromEndian = self::getCurrentEndianness($fromEndian);
+		if ($fromEndian & self::BIG_ENDIAN) {
+			return 'n'; // unsigned short (always 16 bit, big endian byte order)
+		}
+
+		if ($fromEndian & self::LITTLE_ENDIAN) {
+			return 'v'; // unsigned short (always 16 bit, little endian byte order)
+		}
+
+		throw new \RuntimeException('Unsupported endianness given!');
+	}
+	/**
+	 * @param string $doubleWord
+	 * @param int|null $endianness
+	 * @return int[]
+	 */
+	private static function getBytesForInt32Parse(string $doubleWord, int $endianness = null): array {
+		$endianness = self::getCurrentEndianness($endianness);
+
+		$left = 'high';
+		$right = 'low';
+		if ($endianness & self::LOW_WORD_FIRST) {
+			$left = 'low';
+			$right = 'high';
+		}
+
+		if ($endianness & self::BIG_ENDIAN) {
+			$format = 'n';
+		} elseif ($endianness & self::LITTLE_ENDIAN) {
+			$format = 'v';
+		} else {
+			throw new \RuntimeException('Unsupported endianness given!');
+		}
+
+		return unpack("{$format}{$left}/{$format}{$right}", $doubleWord);
+	}
 
 	public function getHex($separator = '') {
 		return implode($separator, $this->hex());
@@ -248,18 +429,6 @@ class MbTypeAny {
 		return unpack(self::getInt16Format($fromEndian), $word)[1];
 	}
 
-	private static function getInt16Format(int $fromEndian = null): string {
-		$fromEndian = self::getCurrentEndianness($fromEndian);
-		if ($fromEndian & self::BIG_ENDIAN) {
-			return 'n'; // unsigned short (always 16 bit, big endian byte order)
-		}
-
-		if ($fromEndian & self::LITTLE_ENDIAN) {
-			return 'v'; // unsigned short (always 16 bit, little endian byte order)
-		}
-
-		throw new \RuntimeException('Unsupported endianness given!');
-	}
 
 	/**
 	 * Parse binary string (1 word) with given endianness byte order to 16bit signed integer (2 bytes to int16)
@@ -314,31 +483,6 @@ class MbTypeAny {
 		return ($byteArray['high'] << 16) + $byteArray['low'];
 	}
 
-	/**
-	 * @param string $doubleWord
-	 * @param int|null $endianness
-	 * @return int[]
-	 */
-	private static function getBytesForInt32Parse(string $doubleWord, int $endianness = null): array {
-		$endianness = self::getCurrentEndianness($endianness);
-
-		$left = 'high';
-		$right = 'low';
-		if ($endianness & self::LOW_WORD_FIRST) {
-			$left = 'low';
-			$right = 'high';
-		}
-
-		if ($endianness & self::BIG_ENDIAN) {
-			$format = 'n';
-		} elseif ($endianness & self::LITTLE_ENDIAN) {
-			$format = 'v';
-		} else {
-			throw new \RuntimeException('Unsupported endianness given!');
-		}
-
-		return unpack("{$format}{$left}/{$format}{$right}", $doubleWord);
-	}
 
 	/**
 	 * Convert 2/4/8 byte into a signed integer. This is needed to make code 32bit php and 64bit compatible as Pack function

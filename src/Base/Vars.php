@@ -3,13 +3,13 @@
 namespace EstaleiroWeb\Modbus\Base;
 
 class Vars {
-	static public $addressId = [
+	const ADDRESSID = [
 		1 => 'coils',
 		2 => 'discret_inputs',
 		3 => 'holding_register',
 		4 => 'input_register',
 	];
-	static public $address = [
+	const ADDRESS = [
 		'coils' => [
 			'id' => 1, 'name' => 'coils',
 			'description' => 'Coils Status',
@@ -55,7 +55,7 @@ class Vars {
 			'permition' => 'ro', 'type' => 'analogic',
 		]
 	];
-	static public $message = [
+	const MESSAGE = [
 		'resquest' => [
 			'who' => 'master', 'direction' => 'push',
 			'frame' => [
@@ -77,7 +77,7 @@ class Vars {
 			],
 		],
 	];
-	static public $modes = [
+	const MODES = [
 		'TCP' => [
 			'unit' => 'bytes',
 			'default_port' => 502,
@@ -259,8 +259,8 @@ class Vars {
 			]]
 		],
 	];
-	static public $returns = ['json', 'xml', 'text', 'table'];
-	static public $errors=[
+	const RETURNS = ['json', 'xml', 'text', 'table'];
+	const ERRORS=[
 		'exception_bitmask' => 128,
 	];
 }
