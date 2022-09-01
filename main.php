@@ -29,3 +29,9 @@ function getArgIP() {
 	print "IP: $ip\n";
 	return $ip;
 }
+if (!function_exists('array_is_list')) {
+	function array_is_list(array $arr) {
+		$k = array_keys($arr);
+		return $k === array_keys($k);
+	}
+}

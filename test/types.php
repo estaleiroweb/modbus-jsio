@@ -32,10 +32,10 @@
 */
 
 use EstaleiroWeb\Modbus\Modbus;
-
-if (php_sapi_name() !== 'cli') die('Should be used only in command line interface');
+use EstaleiroWeb\Traits\Args;
 
 require __DIR__ . '/../vendor/autoload.php';
+cli();
 
 $ranges = [
 	'bit' => [
@@ -149,20 +149,22 @@ $types = [
 		'd'=>'double (machine dependent size and representation)',
 		'e'=>'double (machine dependent size, little endian byte order)',
 		'E'=>'double (machine dependent size, big endian byte order)',
-	*/
-];
+	*/];
 
 $arr = [
 	//"\x80\x00\x00\x00\x00\x00\x00\x00", "\x7F\xFF\xFF\xFF\xFF\xFF\xFF\xFF",
 	//"\x00\x00\x00\x00\x00\x00\x00\x00", "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF",
 	//"\x20\x20\x48\x20\x20\x00","\x00\x00\x00\x48\x00\x00\x00",
 	//"\x12\x34\x56\x78\x9A\xBC",
-	"\xFF\xFF\xFF\x0F",
+	"\x89\xAB\xCD\xEF",
 ];
 
-foreach ($types as $k => $descr) {
-	print "#### [$k] $descr\n";
+foreach ($types as $type => $descr) {
+	print "#### [$type] $descr\n";
 	print "---------------------------------------------\n";
+	showArr($arr, $type);
+}
+function showArr($arr, $type) {
 	foreach ($arr as $v) {
 		//$h = dechex($v);
 		//$b = decbin($v);
@@ -171,8 +173,55 @@ foreach ($types as $k => $descr) {
 			['quant' => strlen($v),],
 			//unpack("{$k}2Dual", $v),
 			//unpack("{$k}4Four", $v),
-			unpack("{$k}*All", $v)
+			unpack("{$type}*All", $v)
 		), JSON_PRETTY_PRINT);
 		print " Val: $js\n";
 	}
 }
+$v = reset($arr);
+print json_encode([
+	'Hex' => implode(' ', str_split(strtoupper(unpack("H*Hex", $v)['Hex']), 2)),
+	'Qt' => strlen($v),
+	'end1' => getBytesForInt32Parse($v, 1),
+	'end2' => getBytesForInt32Parse($v, 2),
+	'end5' => getBytesForInt32Parse($v, 5),
+	'end6' => getBytesForInt32Parse($v, 6),
+], JSON_PRETTY_PRINT) . "\n";
+
+
+function getBytesForInt32Parse(string $doubleWord, int $endianness = null): array {
+	$left = 'high';
+	$right = 'low';
+	if ($endianness & 4) { //self::LOW_WORD_FIRST
+		$left = 'low';
+		$right = 'high';
+	}
+	if ($endianness & 1) $format = 'n'; // self::BIG_ENDIAN
+	elseif ($endianness & 2) $format = 'v'; //self::LITTLE_ENDIAN
+	else throw new \RuntimeException('Unsupported endianness given!');
+	$out = unpack("{$format}{$left}/{$format}{$right}", $doubleWord);
+	foreach ($out as $k => $v) $out[$k . '_Hex'] = strtoupper(str_pad(dechex($v), 4, 0, STR_PAD_LEFT));
+	ksort($out);
+	return $out;
+}
+
+/**
+ * initArgs
+ * Initialize arguments of the object with backtrace of the back method like PHP8
+ * 	- function method(){$this->initArgs(['arg1']);}
+ * 	- $this->method(1,2,3);
+ * 	- $this->method(['arg1'=>1,'arg2'=>2','arg3'=>3]);
+ * 
+ * @param  mixed $args List of arguments of the object
+ * @return object self object
+ */
+class tst {
+	use Args;
+	function __construct() {
+		$arr = ['arg1' => false, 'arg2' => null, 'arg3' => FILTER_VALIDATE_INT,];
+		//$arr = ['arg1', 'arg2'];
+		$this->initArgs($arr);
+	}
+}
+$b = new tst(1, 2, 'a');
+print_r($b);

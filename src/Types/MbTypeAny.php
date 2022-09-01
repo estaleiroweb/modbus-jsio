@@ -38,51 +38,8 @@ class MbTypeAny {
 	 */
 	public const BIG_ENDIAN_LOW_WORD_FIRST = self::BIG_ENDIAN | self::LOW_WORD_FIRST;
 	public static int $defaultEndian = self::BIG_ENDIAN_LOW_WORD_FIRST;
-
 	public const TRUNPACK = [
-		'descr' => [
-			'c' => 'signed char',
-			's' => 'signed short (always 16 bit, machine byte order)',
-			'i' => 'signed integer (machine dependent size and byte order)',
-			'l' => 'signed long (always 32 bit, machine byte order)',
-			'q' => 'signed long long (always 64 bit, machine byte order)',
-			'C' => 'unsigned char',
-			'S' => 'unsigned short (always 16 bit, machine byte order)',
-			'I' => 'unsigned integer (machine dependent size and byte order)',
-			'L' => 'unsigned long (always 32 bit, machine byte order)',
-			'Q' => 'unsigned long long (always 64 bit, machine byte order)',
-			'f' => 'float (machine dependent size and representation)',
-			'd' => 'double (machine dependent size and representation)',
-
-			'n' => 'unsigned short (always 16 bit, big endian byte order)',
-			'N' => 'unsigned long (always 32 bit, big endian byte order)',
-			'J' => 'unsigned long long (always 64 bit, big endian byte order)',
-			'G' => 'float (machine dependent size, big endian byte order)',
-			'E' => 'double (machine dependent size, big endian byte order)',
-
-			'v' => 'unsigned short (always 16 bit, little endian byte order)',
-			'V' => 'unsigned long (always 32 bit, little endian byte order)',
-			'P' => 'unsigned long long (always 64 bit, little endian byte order)',
-			'g' => 'float (machine dependent size, little endian byte order)',
-			'e' => 'double (machine dependent size, little endian byte order)',
-
-			'H' => 'Hex string, high nibble first',
-			'h' => 'Hex string, low nibble first',
-
-			'a' => 'NUL-padded string',
-			'Z' => 'NUL-padded string',
-			'A' => 'SPACE-padded string',
-			'x' => 'NUL byte',
-			'X' => 'Back up one byte',
-			'@' => 'NUL-fill to absolute position',
-
-			'mo' => 'machine byte order',
-			'be' => 'big endian byte order',
-			'le' => 'little endian byte order',
-			'int' => 'integer by bits',
-			'dec' => 'float/double',
-		],
-		'mo' => [
+		'mb' => [
 			'int' => [
 				'signed' => [
 					1 => 'c',
@@ -258,6 +215,68 @@ class MbTypeAny {
 			'unsigned' => [1901, 2155],
 		],
 	];
+
+
+	/**
+	 * String groups to unpack formats
+	 */
+	public const ENDIANS = [
+		'mb' => 'machine byte order',
+		'be' => 'big endian byte order',
+		'le' => 'little endian byte order',
+	];
+	/**
+	 * String groups id to unpack formats
+	 */
+	public const ENDIANS_ID = [
+		0 => 'mb',
+		1 => 'be',
+		2 => 'le',
+	];
+	/**
+	 * All formats to unpack function
+	 */
+	public const FORMATS = [
+		'c' => 'signed char',
+		'C' => 'unsigned char',
+
+		'i' => 'signed integer (machine dependent size and byte order)',
+		'I' => 'unsigned integer (machine dependent size and byte order)',
+		'f' => 'float (machine dependent size and representation)',
+		'd' => 'double (machine dependent size and representation)',
+
+		's' => 'signed short (always 16 bit, machine byte order)',
+		'l' => 'signed long (always 32 bit, machine byte order)',
+		'q' => 'signed long long (always 64 bit, machine byte order)',
+		'S' => 'unsigned short (always 16 bit, machine byte order)',
+		'L' => 'unsigned long (always 32 bit, machine byte order)',
+		'Q' => 'unsigned long long (always 64 bit, machine byte order)',
+
+		'n' => 'unsigned short (always 16 bit, big endian byte order)',
+		'N' => 'unsigned long (always 32 bit, big endian byte order)',
+		'J' => 'unsigned long long (always 64 bit, big endian byte order)',
+		'G' => 'float (machine dependent size, big endian byte order)',
+		'E' => 'double (machine dependent size, big endian byte order)',
+
+		'v' => 'unsigned short (always 16 bit, little endian byte order)',
+		'V' => 'unsigned long (always 32 bit, little endian byte order)',
+		'P' => 'unsigned long long (always 64 bit, little endian byte order)',
+		'g' => 'float (machine dependent size, little endian byte order)',
+		'e' => 'double (machine dependent size, little endian byte order)',
+
+		'H' => 'Hex string, high nibble first',
+		'h' => 'Hex string, low nibble first',
+
+		'a' => 'NUL-padded string',
+		'Z' => 'NUL-padded string',
+		'A' => 'SPACE-padded string',
+		'x' => 'NUL byte',
+		'X' => 'Back up one byte',
+		'@' => 'NUL-fill to absolute position',
+
+		'int' => 'integer by bits',
+		'dec' => 'float/double',
+	];
 	/**
 	 * readonly
 	 *
@@ -274,12 +293,38 @@ class MbTypeAny {
 		'dec' => null,
 	];
 	/**
+	 * @see ENDIANS_ID and ENDIANS const
+	 *
+	 * @var int
+	 */
+	static public $endians = 1;
+	/**
+	 * To 32bits we have 2 registers 16+16bits
+	 * In diferent vendors the first 16bits is High or Low part of 32bits
+	 * The result will depends of the endians too to 8+8bit format (machine/big/little endian order)
+	 * Done this step of the endian, the int value will be low_part+(higth_part*65535)
+	 * @example "0x89ABCDEF"
+	 * 	- to $lowWFirst = 0 ["higth"=>"0x89AB","low"=>"0xCDEF",]
+	 * 	- to $lowWFirst = 1 ["higth"=>"0xCDEF","low"=>"0x89AB",]
+	 */
+	static public $lowWFirst32 = 1;
+	/**
+	 * idem $lowWFirst32
+	 */
+	static public $lowWFirst64 = 1;
+	/**
 	 * protect
 	 *
 	 * @var array GetSet Trait variable
 	 */
 	protected $protect = [];
-	public function __construct($val = null) {
+	/**
+	 * __construct
+	 *
+	 * @param  mixed $val
+	 * @return void
+	 */
+	public function __construct($val = null,$endian=null,$lowWFirst=null) {
 		$this->raw = $val;
 	}
 	public function __toString() {
