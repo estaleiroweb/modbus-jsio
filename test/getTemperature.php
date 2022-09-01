@@ -9,13 +9,11 @@ require __DIR__ . '/../vendor/autoload.php';
 $m = new Modbus('192.168.1.102');
 $m->readTimeout = .2;
 
-/*
 $fc = $argv[1] ?? 4;
 $addr = $argv[2] ?? 1;
 $quant = $argv[3] ?? 1;
 print_r($m->fc($fc, $addr, $quant));
-*/
-$m->scan(4);
+
 
 
 //print_r(['result' => $r, 'log' => $m->log,]);

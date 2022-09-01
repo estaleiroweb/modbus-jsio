@@ -173,7 +173,7 @@ class Modbus {
 			$this->log = $exception->getMessage();
 			$this->log = $exception->getTraceAsString();
 		}
-		return $this;
+		return $this->conn;
 	}
 	public function disconnect() {
 		if (is_null($this->conn)) return;
@@ -181,7 +181,7 @@ class Modbus {
 		$this->conn = null;
 	}
 	public function fc($fc, $addr = 1, $quant = 1, $uId = 1) {
-		if (is_null($this->conn)) return $this;
+		if (is_null($this->conn)) return;
 		$startTime = microtime(true) * 1000;
 
 		$packet = FC::objRequest([$fc, $addr, $quant, $uId]);
@@ -315,7 +315,8 @@ class Modbus {
 				)
 			) {
 				preg_match_all('/\b(tcp|udp) +open/', $v, $r);
-				$out[$ret[1]] = $r[1];
+				sort($r[1]);
+				$out[$ret[1]] = implode(',', $r[1]);
 			}
 		}
 		return $out;
@@ -330,7 +331,7 @@ class Modbus {
 		if (!$nodes) $nodes = [1];
 		else $nodes = (array)$nodes;
 		$lastAddr = end($addrs);
-		$this->connect();
+		if(!$this->connect()) die("Not Connected\n");
 		$log = null;
 		foreach ($nodes as $node) {
 			foreach ($fcs as $fc) {
@@ -342,14 +343,14 @@ class Modbus {
 							$head = false;
 							print "Node FC Addr Len Data TId___ Elapse(ms)\n";
 						}
-						print
+						print '' .
 							str_pad($r['node'], 4, ' ', STR_PAD_LEFT) . ' ' .
 							str_pad($r['fc'], 2, ' ', STR_PAD_LEFT) . ' ' .
 							str_pad($addr, 4, ' ', STR_PAD_LEFT) . ' ' .
 							str_pad($r['len'], 3, ' ', STR_PAD_LEFT) . ' ' .
 							str_pad(unpack('H*', $r['data'])[1], 4, ' ', STR_PAD_LEFT) . ' ' .
 							str_pad($r['transactionId'], 6, ' ', STR_PAD_LEFT) . ' ' .
-							$this->elapsed."\n";
+							$this->elapsed . "\n";
 						$log = $this->log;
 					}
 				}
