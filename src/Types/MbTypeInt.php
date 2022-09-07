@@ -16,8 +16,8 @@ class MbTypeInt extends MbType {
 			'unsigned' => ['len' => 5, 'endian' => 'S', 'min' => 0, 'max' => 65535,],
 		], // 0x8000~0x7FFF ~ 0x0000~0xFFFF
 		3 => [
-			'signed' => ['len' => 8, 'endian' => 'cCC', 'min' => -8388608, 'max' => 8388607,],
-			'unsigned' => ['len' => 8, 'endian' => 'CCC', 'min' => 0, 'max' => 16777215,],
+			'signed' => ['len' => 8, 'endian' => 'l', 'min' => -8388608, 'max' => 8388607,],
+			'unsigned' => ['len' => 8, 'endian' => 'L', 'min' => 0, 'max' => 16777215,],
 		], // 0x800000~0x7FFFFF ~ 0x000000~0xFFFFFF
 		4 => [
 			'signed' => ['len' => 11, 'endian' => 'l', 'min' => -2147483648, 'max' => 2147483647,],
@@ -36,14 +36,23 @@ class MbTypeInt extends MbType {
 	public function __toString() {
 		return $this->val;
 	}
-	public function __invoke($val = null) {
-		$class = __CLASS__ . $this->bytes;
-		$fn = 'endian_';
-		$s = '_' . ($this->readonly['unsigned'] ? 'unsigned' : 'signed');
-		$endian = '_' . self::ENDIANS_ID[$this->endian];
-		//endian_c2v_signed_be
-		if (is_null($val)) return $this->val;
-		$this->val = $val;
+	public function __invoke(&$cbin = null) {
+		$bytes = $this->bytes;
+		$conf = $this->getConfRange();
+		$format = $conf['endian'];
+		if (is_null($cbin)) {
+			$val = pack($format, $this->val);
+			if ($bytes == 3) $val = substr($val, -3);
+			$val = $this->orderWord($val);
+			return $val;
+		}
+		$hex = substr($cbin, 0, $bytes);
+		$cbin = substr($cbin, $bytes);
+
+		$hex = $this->orderWord($hex);
+		if ($bytes == 3) $hex = "\xFF$hex";
+		$hex = unpack($format, $hex)[1];
+		$this->val = $hex;
 		return $this;
 	}
 	public function setUnsigned($val) {
@@ -110,8 +119,13 @@ class MbTypeInt extends MbType {
 		return $conf;
 	}
 	protected function getConfRange() {
-		$s = $this->readonly['unsigned'] ? 'unsigned' : 'signed';
-		$b = $this->readonly['bytes'];
-		return self::INT_RANGES[$b][$s];
+		$unsigned = $this->unsigned;
+		$signed = $unsigned ? 'unsigned' : 'signed';
+		$bytes = $this->bytes;
+		$conf = self::INT_RANGES[$bytes][$signed];
+		$conf['bytes'] = $bytes;
+		$conf['signed'] = $signed;
+		$conf['unsigned'] = $unsigned;
+		return $conf;
 	}
 }

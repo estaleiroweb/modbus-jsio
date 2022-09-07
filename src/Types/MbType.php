@@ -191,51 +191,37 @@ abstract class MbType {
 	 * @see init method
 	 * @return void
 	 */
-	public function __construct($order=null) {
-		$this->order=$order;
+	final public function __construct($order = null) {
+		$this->order = $order;
 		$this->init();
 	}
 	public function __toString() {
 		return $this->val;
 	}
-	public function __invoke($val = null) {
+	public function __invoke(&$val = null) {
 		if (is_null($val)) return $this->val;
-		$this->val = $val;
+		$bytes = $this->bytes;
+		$this->val = substr($val, 0, $bytes);
+		$val = substr($val, $bytes);
 		return $this;
 	}
 	/**
-	 * setEndian
+	 * getValue
 	 *
-	 * @param  int|string $val see key values of the ENDIANS/ENDIANS_ID const
+	 * @return mixed
+	 */
+	public function getValue() {
+		return $this->val;
+	}
+	/**
+	 * setOrder
+	 *
+	 * @param  int|null $val see key values of the ORDER* const
 	 * @return self
 	 */
 	public function setOrder($val) {
 		if ($this->checkOrder($val)) {
 			$this->readonly['order'] = $val;
-		}
-		return $this;
-	}
-	/**
-	 * setEndian
-	 *
-	 * @param  int|string $val see key values of the ENDIANS/ENDIANS_ID const
-	 * @return self
-	 */
-	public function setEndian($val) {
-		if ($this->checkEndian($val)) {
-			$this->readonly['endian'] = $val;
-		}
-		return $this;
-	}
-	/**
-	 * setLowWFirst
-	 *
-	 * @param  int $val = LOW_W_FIRST_32 | LOW_W_FIRST_64 const
-	 * @return self
-	 */
-	public function setLowWFirst($val) {
-		if ($this->checkLowWFirst($val)) {
-			$this->readonly['lowWFirst'] = $val;
 		}
 		return $this;
 	}
@@ -249,11 +235,23 @@ abstract class MbType {
 		$this->readonly['val'] = $val;
 		return $this;
 	}
+	/**
+	 * setLen
+	 *
+	 * @param  int|null $val Value to use in the type
+	 * @return self
+	 */
 	public function setLen($val) {
 		$val = (int)$val;
 		if ($val > 0) $this->readonly['len'] = $val;
 		return $this;
 	}
+	/**
+	 * setSource
+	 *
+	 * @param  object|array|string|int|null $val Value to use in the type
+	 * @return self
+	 */
 	public function setSource($val) {
 		if (is_array($val)) {
 			$this->readonly['source'] = $val;
@@ -282,24 +280,19 @@ abstract class MbType {
 		}
 		return $this->setSource($js);
 	}
-	public function setHex($val) { //TODO
-		return $this;
-	}
 	public function getHex($separator = '') { //TODO
 		return unpack('H*', $this())[1];
 	}
-	public function getValue() {
-		return $this->val;
+	public function setHex($val) { //TODO
+		return $this;
 	}
 
+
 	/**
+	 * init
 	 * inicialize arguments of class by associative/list array 
-	 * ```php
-	 * $arr=array(
-	 * 	'endian'=><checkEndian>,
-	 * 	'lowWFirst'=><checkLowWFirst>,
-	 * );
-	 * ```
+	 *
+	 * @return self
 	 */
 	protected function init() {
 		return $this;
@@ -318,7 +311,7 @@ abstract class MbType {
 		foreach ($conf as $k => $v) $obj->$k = $v;
 		return $obj;
 	}
-	protected static function checkType($val) {
+	private static function checkType($val) {
 		static $arr = [];
 		if (
 			is_null($val) ||
@@ -359,6 +352,7 @@ abstract class MbType {
 		}
 		return $out;
 	}
+
 	protected function checkOrder(&$val) {
 		static $masc = self::ORDER_NIBBLE | self::ORDER_ENDIAN_BIG | self::ORDER_WORD4_HIGH | self::ORDER_WORD8_HIGH;
 
@@ -369,23 +363,6 @@ abstract class MbType {
 			return true;
 		}
 		return false;
-	}
-	protected function checkEndian(&$val) {
-		if (is_null($val)) return false;
-		if (key_exists($val, self::ENDIANS_ID)) return true;
-		if (!key_exists($val, self::ENDIANS)) return false;
-		$val = self::ENDIANS[$val]['id'];
-		return true;
-	}
-	protected function checkLowWFirst($val) {
-		return !is_null($val) && $val & 3;
-	}
-	private function orderWordCallback($cbin, $bytes) {
-		static $fn;
-		if (!$fn) $fn = function ($v) use ($bytes) {
-			return substr($v, $bytes, $bytes) . substr($v, 0, $bytes);
-		};
-		return implode('', array_map($fn, str_split($cbin, $bytes * 2)));
 	}
 	protected function orderWord($cbin) {
 		$order = $this->order;
@@ -408,6 +385,13 @@ abstract class MbType {
 			$cbin = $this->orderWordCallback($cbin, $bytes);
 		}
 		return $cbin;
+	}
+	private function orderWordCallback($cbin, $bytes) {
+		static $fn;
+		if (!$fn) $fn = function ($v) use ($bytes) {
+			return substr($v, $bytes, $bytes) . substr($v, 0, $bytes);
+		};
+		return implode('', array_map($fn, str_split($cbin, $bytes * 2)));
 	}
 
 	public static function cBinHex($cbin) { //ex: "\xF1\x23" => F123

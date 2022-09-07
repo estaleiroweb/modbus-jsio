@@ -117,21 +117,45 @@ $formats = [
 	'q' => 8,
 	'Q' => 8,
 ];
-$val = "\x01\x23\x45\x67\x89\xAB\xCD\x7F";
-//$val = "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF";
+$val = "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF";
+$val = "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF";
+$val = "\x01\x23\x45\x67\x89\xAB\xCD\x8F";
 //$ret = unpack('cs0/C*s', $val);
 $ret = [];
 
 foreach ($formats as $f => $bytes) {
-	$v = substr($val, 0, $bytes);
+	$v = substr($val, -1 * $bytes);
 	$h = strtoupper(unpack('H*', $v)[1]);
 	$d = unpack($f, $v)[1];
-	$len = $bytes * 2;
-	$hTo = strtoupper(substr(str_pad(dechex($d), $len, 0, STR_PAD_LEFT), 0, $len));
+	$len = $bytes * -2;
+	$hTo = strtoupper(str_pad(dechex($d), 16, 0, STR_PAD_LEFT));
 	$dTo = (int)hexdec($hTo);
+	$hTo = substr($hTo, $len);
 	$ret[$f . '_' . $bytes] = "$h => $hTo ($d => $dTo)";
 }
 print_r($ret);
+$rVal = substr($val, -4);
+$h = unpack('H*', $rVal)[1];
+/*
+$h = unpack('C*', $rVal);
+$h = array_map(function ($v) {
+	return str_pad(strtoupper(dechex($v)), 2, 0, STR_PAD_LEFT) . ":$v";
+}, $h);
+*/
+
+
+
+function signed2hex($value, $reverseEndianness = true) {
+	$packed = pack('s', $value);
+	$hex = '';
+	for ($i = 0; $i < 2; $i++) {
+		$hex .= strtoupper(str_pad(dechex(ord($packed[$i])), 2, '0', STR_PAD_LEFT));
+	}
+	$tmp = str_split($hex, 2);
+	$out = implode('', ($reverseEndianness ? array_reverse($tmp) : $tmp));
+	return $out;
+}
+
 //print PHP_INT_SIZE . "\n";
 /*print_r([
 	'format'=>$f,
