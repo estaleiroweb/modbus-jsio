@@ -131,12 +131,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/estaleiroweb/traits.git",
-                "reference": "bf38286c9bde0dde6883a3b6d39450f9d745e187"
+                "reference": "0e4eb5b95a712a835076e1099c75263c2b309543"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/estaleiroweb/traits/zipball/bf38286c9bde0dde6883a3b6d39450f9d745e187",
-                "reference": "bf38286c9bde0dde6883a3b6d39450f9d745e187",
+                "url": "https://api.github.com/repos/estaleiroweb/traits/zipball/0e4eb5b95a712a835076e1099c75263c2b309543",
+                "reference": "0e4eb5b95a712a835076e1099c75263c2b309543",
                 "shasum": ""
             },
             "require": {
@@ -164,7 +164,7 @@
                 "issues": "https://github.com/estaleiroweb/traits/issues",
                 "source": "https://github.com/estaleiroweb/traits/tree/main"
             },
-            "time": "2022-09-01T22:21:54+00:00"
+            "time": "2022-09-01T22:45:51+00:00"
         },
         {
             "name": "evenement/evenement",

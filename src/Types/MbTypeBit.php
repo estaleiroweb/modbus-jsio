@@ -2,7 +2,7 @@
 
 namespace EstaleiroWeb\Modbus\Types;
 
-class MbTypeBit extends MbTypeAny {
+class MbTypeBit extends MbType {
 	public function __construct($val = null) {
 		$this->readonly['raw'] = 0;
 		$this->readonly['aRaw'] = [0];

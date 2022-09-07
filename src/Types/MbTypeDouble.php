@@ -2,7 +2,7 @@
 
 namespace EstaleiroWeb\Modbus\Types;
 
-class MbTypeFoat extends MbTypeDec {
+class MbTypeDouble extends MbTypeFoat {
 	public function __construct() {
 	}
 }

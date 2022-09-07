@@ -49,12 +49,25 @@ trait Args {
 		$bt = debug_backtrace();
 		$args = @$bt[1]['args'];
 		if (!$args || !$definitions) return $this;
-		if (array_is_list($definitions)) {
-			foreach ($definitions as $k => $v) {
-				if (key_exists($k, $args)) $this->$v = $args[$k];
-				else break;
+		if (
+			count($args) == 1 &&
+			is_array($arr = reset($args)) &&
+			!array_is_list($arr)
+		) {
+			if (array_is_list($definitions)) {
+				foreach ($definitions as $arg) {
+					if (key_exists($arg, $arr)) $this->$arg = $arr[$arg];
+				}
+				return $this;
 			}
 		} else {
+			if (array_is_list($definitions)) {
+				foreach ($definitions as $idx => $arg) {
+					if (key_exists($idx, $args)) $this->$arg = $args[$idx];
+					else break;
+				}
+				return $this;
+			}
 			$idx = 0;
 			$arr = [];
 			foreach ($definitions as $arg => &$def) {
@@ -67,11 +80,11 @@ trait Args {
 				$arr[$arg] = @$args[$idx++];
 			}
 			unset($def);
+		}
 
-			$out = filter_var_array($arr, $definitions);
-			foreach ($out as $k => $v) {
-				if ($v !== false || $v === $arr[$k]) $this->$k = $v;
-			}
+		$args = filter_var_array($arr, $definitions);
+		foreach ($args as $arg => $val) {
+			if ($val !== false || $val === $arr[$arg]) $this->$arg = $val;
 		}
 		return $this;
 	}

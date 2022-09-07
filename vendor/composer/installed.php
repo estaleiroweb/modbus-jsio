@@ -45,7 +45,7 @@
             'aliases' => array(
                 0 => '9999999-dev',
             ),
-            'reference' => 'bf38286c9bde0dde6883a3b6d39450f9d745e187',
+            'reference' => '0e4eb5b95a712a835076e1099c75263c2b309543',
             'dev_requirement' => false,
         ),
         'evenement/evenement' => array(

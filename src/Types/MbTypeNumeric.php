@@ -2,5 +2,6 @@
 
 namespace EstaleiroWeb\Modbus\Types;
 
-class MbTypeChar extends MbType {
+class MbTypeNumeric extends MbTypeDec {
 }
+

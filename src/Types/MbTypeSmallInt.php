@@ -2,5 +2,5 @@
 
 namespace EstaleiroWeb\Modbus\Types;
 
-class MbTypeChar extends MbType {
+class MbTypeSmallInt extends MbTypeInt2 {
 }
