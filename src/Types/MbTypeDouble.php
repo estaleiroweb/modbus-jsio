@@ -3,6 +3,9 @@
 namespace EstaleiroWeb\Modbus\Types;
 
 class MbTypeDouble extends MbTypeFoat {
-	public function __construct() {
+	protected function init() {
+		parent::init();
+		$this->readonly['bytes'] = 8;
+		return $this;
 	}
 }

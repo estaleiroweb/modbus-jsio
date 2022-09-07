@@ -95,6 +95,19 @@ abstract class MbType {
 		4 => 'bi',
 		5 => 'li',
 	];
+	public const ORDER_NIBBLE = 1;
+	public const ORDER_ENDIAN_BIG = 2;
+	public const ORDER_WORD4_HIGH = 4;
+	public const ORDER_WORD8_HIGH = 8;
+	/**
+	 * String groups id to pack/unpack formats
+	 */
+	public const ORDER = [
+		1 => ['descr' => '1(8bits) Nibble order (0:low, 1:high) first', 'ex' => ['89AB=>89AB', '89AB=>98BA']],
+		2 => ['descr' => '2(16bits) Endian byte order (0:little, 1:big) first', 'ex' => ['89 AB=>AB 89', '89 AB=>89 AB']],
+		4 => ['descr' => '4(32bits) Word byte order (0:low, 1:high) first', 'ex' => ['89AB CDEF=>CDEF 89AB', '89AB CDEF=>89AB CDEF']],
+		8 => ['descr' => '8(64bits) Word byte order (0:low, 1:high) first', 'ex' => ['01234567 89ABCDEF=>89ABCDEF 01234567', '01234567 89ABCDEF=>01234567 89ABCDEF']],
+	];
 	/**
 	 * All formats to unpack function
 	 */
@@ -144,8 +157,6 @@ abstract class MbType {
 	 *
 	 * @var int
 	 */
-	static public $default_endians = 1;
-	static public $default_lowWFirst = 1;
 	/**
 	 * readonly
 	 *
@@ -153,6 +164,7 @@ abstract class MbType {
 	 */
 	protected $readonly = [
 		'bytes' => 1,
+		'order' => self::ORDER_ENDIAN_BIG | self::ORDER_ENDIAN_BIG | self::ORDER_WORD4_HIGH | self::ORDER_WORD8_HIGH,
 		'endian' => null,
 		'lowWFirst' => null,
 		'val' => null,
@@ -175,11 +187,12 @@ abstract class MbType {
 	/**
 	 * __construct
 	 *
-	 * @param  mixed $val
+	 * @param ?int $order
 	 * @see init method
 	 * @return void
 	 */
-	public function __construct() {
+	public function __construct($order=null) {
+		$this->order=$order;
 		$this->init();
 	}
 	public function __toString() {
@@ -188,6 +201,18 @@ abstract class MbType {
 	public function __invoke($val = null) {
 		if (is_null($val)) return $this->val;
 		$this->val = $val;
+		return $this;
+	}
+	/**
+	 * setEndian
+	 *
+	 * @param  int|string $val see key values of the ENDIANS/ENDIANS_ID const
+	 * @return self
+	 */
+	public function setOrder($val) {
+		if ($this->checkOrder($val)) {
+			$this->readonly['order'] = $val;
+		}
 		return $this;
 	}
 	/**
@@ -277,40 +302,6 @@ abstract class MbType {
 	 * ```
 	 */
 	protected function init() {
-		static $keys = [
-			'endian' => 'checkEndian',
-			'lowWFirst' => 'checkLowWFirst',
-		];
-		$this->endian = self::$default_endians;
-		$this->lowWFirst = self::$default_lowWFirst;
-
-		$bt = debug_backtrace();
-		$args = @$bt[1]['args'];
-		if (!$args) return $this;
-		if (count($args) == 1 && is_array($a = reset($args))) {
-			$args = $a;
-		}
-		if (array_is_list($args)) {
-			$a = $keys;
-			while ($args && $a) {
-				$v = array_shift($v);
-				while ($a) {
-					$k = key($a);
-					$fn = array_shift($a);
-					if (call_user_func([$this, $fn], $v)) {
-						$this->$k = $v;
-						break;
-					}
-				}
-			}
-		} else {
-			foreach ($args as $k => $v) {
-				if (
-					key_exists($k, $keys) &&
-					call_user_func([$this, $keys[$k]], $v)
-				) $this->$k = $v;
-			}
-		}
 		return $this;
 	}
 	public static function type($val) {
@@ -368,6 +359,17 @@ abstract class MbType {
 		}
 		return $out;
 	}
+	protected function checkOrder(&$val) {
+		static $masc = self::ORDER_NIBBLE | self::ORDER_ENDIAN_BIG | self::ORDER_WORD4_HIGH | self::ORDER_WORD8_HIGH;
+
+		if (is_null($val)) return false;
+		$v = (int)$val;
+		if ($v >= 0 && $v <= 15) {
+			$val = $v & $masc;
+			return true;
+		}
+		return false;
+	}
 	protected function checkEndian(&$val) {
 		if (is_null($val)) return false;
 		if (key_exists($val, self::ENDIANS_ID)) return true;
@@ -377,6 +379,35 @@ abstract class MbType {
 	}
 	protected function checkLowWFirst($val) {
 		return !is_null($val) && $val & 3;
+	}
+	private function orderWordCallback($cbin, $bytes) {
+		static $fn;
+		if (!$fn) $fn = function ($v) use ($bytes) {
+			return substr($v, $bytes, $bytes) . substr($v, 0, $bytes);
+		};
+		return implode('', array_map($fn, str_split($cbin, $bytes * 2)));
+	}
+	protected function orderWord($cbin) {
+		$order = $this->order;
+		$bytes = $this->bytes;
+		if (!($order | self::ORDER_NIBBLE)) {
+			$cbin = pack('H*', unpack('h*', $cbin)[1]);
+		}
+		if ($bytes < self::ORDER_ENDIAN_BIG) return $cbin;
+		if ($order | self::ORDER_ENDIAN_BIG) {
+			$cbin = implode('', array_map(function ($v) {
+				return strrev($v);
+			}, str_split($cbin, $bytes)));
+		}
+		if ($bytes < self::ORDER_WORD4_HIGH) return $cbin;
+		if ($order | self::ORDER_WORD4_HIGH) {
+			$cbin = $this->orderWordCallback($cbin, $bytes);
+		}
+		if ($bytes < self::ORDER_WORD8_HIGH) return $cbin;
+		if ($order | self::ORDER_WORD8_HIGH) {
+			$cbin = $this->orderWordCallback($cbin, $bytes);
+		}
+		return $cbin;
 	}
 
 	public static function cBinHex($cbin) { //ex: "\xF1\x23" => F123

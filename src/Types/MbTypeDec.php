@@ -3,10 +3,12 @@
 namespace EstaleiroWeb\Modbus\Types;
 
 class MbTypeDec extends MbTypeInt {
-	public function __construct($endian = null, $lowWFirst = null) {
-		$this->__construct($endian, $lowWFirst);
-		$this->readonly['precision'] = 2;
+	protected function init() {
+		parent::init();
 		$this->readonly['dec'] = true;
+		$this->readonly['bytes'] = 4;
+		$this->readonly['precision'] = 2;
+		return $this;
 	}
 	public function setDec($val) {
 		$this->readonly['dec'] = filter_var(

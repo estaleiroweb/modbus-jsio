@@ -82,6 +82,71 @@ print_r([
 ]);
 //'endian' => [null, null, 's', 'i'],
 //'endian' => ['n', 'v', 'S', 'I'],
+$val = "\x01\x23\x45\x67\x89\xAB\xCD\xEF";
+print strtoupper(unpack('H*', $val)[1]) . "\n";
+
+//$format1 = $format2 = 'C';
+
+$bytes = 1;
+$val = str_split($val, 3);
+$val = array_map(function ($v) use ($bytes) {
+	return substr($v, 0, $bytes) . substr($v, $bytes, $bytes);
+	return substr($v, $bytes, $bytes) . substr($v, 0, $bytes);
+}, $val);
+//print_r($val);
+$val = implode('', $val);
+print strtoupper(unpack('H*', $val)[1]) . "\n";
+$formats = [
+	'c' => 1,
+	'C' => 1,
+
+	'n' => 2,
+	'v' => 2,
+	's' => 2,
+	'S' => 2,
+
+	'N' => 4,
+	'V' => 4,
+	'l' => 4,
+	'L' => 4,
+	'i' => 4,
+	'I' => 4,
+
+	'J' => 8,
+	'P' => 8,
+	'q' => 8,
+	'Q' => 8,
+];
+$val = "\x01\x23\x45\x67\x89\xAB\xCD\x7F";
+//$val = "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF";
+//$ret = unpack('cs0/C*s', $val);
+$ret = [];
+
+foreach ($formats as $f => $bytes) {
+	$v = substr($val, 0, $bytes);
+	$h = strtoupper(unpack('H*', $v)[1]);
+	$d = unpack($f, $v)[1];
+	$len = $bytes * 2;
+	$hTo = strtoupper(substr(str_pad(dechex($d), $len, 0, STR_PAD_LEFT), 0, $len));
+	$dTo = (int)hexdec($hTo);
+	$ret[$f . '_' . $bytes] = "$h => $hTo ($d => $dTo)";
+}
+print_r($ret);
+//print PHP_INT_SIZE . "\n";
+/*print_r([
+	'format'=>$f,
+	'ret'=>$ret,
+	'dec'=>$d,
+	'hex'=>$h,
+	'hRet'=>strtoupper(str_pad(dechex($d), 8, 0, STR_PAD_LEFT)),
+	'dec2'=>hexdec($h),
+]);
+print_r([
+	$f=>$h.'=>'.strtoupper(str_pad(dechex($d), 8, 0, STR_PAD_LEFT)),
+	//'ret'=>$ret,
+	'dec'=>$d,
+	'dec2'=>hexdec($h),
+]);*/
 
 function testArgs() {
 	/**
@@ -253,10 +318,10 @@ function vwType($fn = 'getBytesForInt32Parse', $v = "\x01\x23\x45\x67\x89\xAB\xC
 		'Hex' => implode(' ', str_split(strtoupper(unpack("H*Hex", $v)['Hex']), 2)),
 		'Qt' => strlen($v),
 		'fn' => $fn,
-		'end1' => $fn($v, 1),
-		'end2' => $fn($v, 2),
-		'end5' => $fn($v, 5),
-		'end6' => $fn($v, 6),
+		'be_hi_1' => $fn($v, 1),
+		'le_hi_2' => $fn($v, 2),
+		'be_lo_5' => $fn($v, 5),
+		'le_lo_6' => $fn($v, 6),
 	], JSON_PRETTY_PRINT) . "\n";
 }
 function getInt16Format(int $fromEndian = null): string {

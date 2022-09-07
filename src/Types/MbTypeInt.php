@@ -8,30 +8,43 @@ class MbTypeInt extends MbType {
 	 */
 	public const INT_RANGES = [
 		1 => [
-			'signed' => ['len' => 3, 'min' => -128, 'max' => 127,],
-			'unsigned' => ['len' => 3, 'min' => 0, 'max' => 255,],
+			'signed' => ['len' => 3, 'endian' => 'c', 'min' => -128, 'max' => 127,],
+			'unsigned' => ['len' => 3, 'endian' => 'C', 'min' => 0, 'max' => 255,],
 		], // 0x80~0x7F ~ 0x00~0xFF
 		2 => [
-			'signed' => ['len' => 6, 'min' => -32768, 'max' => 32767,],
-			'unsigned' => ['len' => 5, 'min' => 0, 'max' => 65535,],
+			'signed' => ['len' => 6, 'endian' => 's', 'min' => -32768, 'max' => 32767,],
+			'unsigned' => ['len' => 5, 'endian' => 'S', 'min' => 0, 'max' => 65535,],
 		], // 0x8000~0x7FFF ~ 0x0000~0xFFFF
 		3 => [
-			'signed' => ['len' => 8, 'min' => -8388608, 'max' => 8388607,],
-			'unsigned' => ['len' => 8, 'min' => 0, 'max' => 16777215,],
+			'signed' => ['len' => 8, 'endian' => 'cCC', 'min' => -8388608, 'max' => 8388607,],
+			'unsigned' => ['len' => 8, 'endian' => 'CCC', 'min' => 0, 'max' => 16777215,],
 		], // 0x800000~0x7FFFFF ~ 0x000000~0xFFFFFF
 		4 => [
-			'signed' => ['len' => 11, 'min' => -2147483648, 'max' => 2147483647,],
-			'unsigned' => ['len' => 10, 'min' => 0, 'max' => 4294967295,],
+			'signed' => ['len' => 11, 'endian' => 'l', 'min' => -2147483648, 'max' => 2147483647,],
+			'unsigned' => ['len' => 10, 'endian' => 'L', 'min' => 0, 'max' => 4294967295,],
 		], // 0x80000000~0x7FFFFFFF ~ 0x00000000~0xFFFFFFFF
 		8 => [
-			'signed' => ['len' => 20, 'min' => -9223372036854775808, 'max' => 9223372036854775807,],
-			'unsigned' => ['len' => 20, 'min' => 0, 'max' => 18446744073709551615,],
+			'signed' => ['len' => 20, 'endian' => 'q', 'min' => -9223372036854775808, 'max' => 9223372036854775807,],
+			'unsigned' => ['len' => 20, 'endian' => 'Q', 'min' => 0, 'max' => 18446744073709551615,],
 		], // 0x8000000000000000~0x7FFFFFFFFFFFFFFF ~ 0x0000000000000000~0xFFFFFFFFFFFFFFFF
 	];
 
-	public function __construct() {
-		$this->init();
+	protected function init() {
 		$this->readonly['bytes'] = 4;
+		return $this;
+	}
+	public function __toString() {
+		return $this->val;
+	}
+	public function __invoke($val = null) {
+		$class = __CLASS__ . $this->bytes;
+		$fn = 'endian_';
+		$s = '_' . ($this->readonly['unsigned'] ? 'unsigned' : 'signed');
+		$endian = '_' . self::ENDIANS_ID[$this->endian];
+		//endian_c2v_signed_be
+		if (is_null($val)) return $this->val;
+		$this->val = $val;
+		return $this;
 	}
 	public function setUnsigned($val) {
 		$this->readonly['unsigned'] = filter_var(
@@ -49,29 +62,25 @@ class MbTypeInt extends MbType {
 	}
 	public function setBytes($val) {
 		$val = (int)$val;
-		if ($val && key_exists($val, self::INT_RANGES)) {
-			$this->readonly['bytes'] = $val;
-		}
+		if (
+			$val &&
+			key_exists($val, self::INT_RANGES)
+		) $this->readonly['bytes'] = min(PHP_INT_SIZE, $val);
 		return $this;
 	}
 	public function setLen($val) {
 		$val = (int)$val;
-		if ($val > 0) $this->readonly['len'] = min(
-			$val,
-			$this->getConfRange()['len']
-		);
+		if ($val > 0) $this->readonly['len'] = $val;
 		return $this;
 	}
 	public function setVal($val) {
-		$conf = $this->getConfRange();
+		$conf = $this->getMinMax();
 		$this->readonly['val'] = max(min($val, $conf['max']), $conf['min']);
 		return $this;
 	}
 
-	protected function getConfRange() {
-		$s = $this->readonly['unsigned'] ? 'unsigned' : 'signed';
-		$b = $this->readonly['bytes'];
-		$conf = self::INT_RANGES[$b][$s];
+	protected function getMinMax() {
+		$conf = $this->getConfRange();
 		$minC = $this->min;
 		$maxC = $this->max;
 		$len = $this->len;
@@ -97,6 +106,12 @@ class MbTypeInt extends MbType {
 		}
 		$conf['min'] = max($min, $minC, $conf['min']);
 		$conf['max'] = max($max, $maxC, $conf['max']);
+		if ($conf['max'] < 0) $conf['max'] = PHP_INT_MAX;
 		return $conf;
+	}
+	protected function getConfRange() {
+		$s = $this->readonly['unsigned'] ? 'unsigned' : 'signed';
+		$b = $this->readonly['bytes'];
+		return self::INT_RANGES[$b][$s];
 	}
 }
