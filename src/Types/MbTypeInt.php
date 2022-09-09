@@ -126,12 +126,14 @@ class MbTypeInt extends MbType {
 	];
 
 	protected function init() {
+		parent::init();
 		$this->readonly['bytes'] = 4;
+		$this->readonly['bitOrder'] = null;
 		$this->readonly['bitOrderNibble'] = true;
 		$this->readonly['bitOrderEndian'] = true;
 		$this->readonly['bitOrderWord4'] = 1;
 		$this->readonly['bitOrderWord8'] = 1;
-		return $this;
+		return $this->rebuildBitOrder();
 	}
 	public function __toString() {
 		return $this->val;
@@ -148,6 +150,7 @@ class MbTypeInt extends MbType {
 		$this->readonly['val'] = unpack($conf['endian'], $raw)[1];
 		return $this;
 	}
+	
 	public function setVal($val) {
 		$conf = $this->getMinMax();
 		$val = max(min($val, $conf['max']), $conf['min']);
@@ -185,23 +188,74 @@ class MbTypeInt extends MbType {
 		if ($val > 0) $this->readonly['len'] = $val;
 		return $this;
 	}
-	public function setBitOrderNibble($val) {
-		$this->readonly['bitOrderNibble'] = (bool)$val;
-		return $this;
+	public function setBitOrder($val) {
+		$arr = [
+			'bitOrderNibble' => [
+				'er' => '/\s*(?:bitOrder)?N(?:ibble)?\s*=?\s*(.+)?\s*/i',
+				'fn' => 'Bool',
+			],
+			'bitOrderEndian' => [
+				'er' => '/\s*(?:bitOrder)?E(?:ndian)?\s*=?\s*(.+)?\s*/i',
+				'fn' => 'Bool',
+			],
+			'bitOrderWord4' => [
+				'er' => '/\s*(?:bitOrder)?(?:Word)?4\s*=\s*?(.+)?\s*/',
+				'fn' => 'HighLow',
+			],
+			'bitOrderWord8' => [
+				'er' => '/\s*(?:bitOrder)?(?:Word)?8\s*=\s*?(.+)?\s*/',
+				'fn' => 'HighLow',
+			],
+		];
+		if (is_array($val)) {
+			if (array_is_list($val)) {
+				$fnPre = 'List';
+				$keys = null;
+			} else {
+				$fnPre = 'Assoc';
+				$keys = array_keys($val);
+			}
+			$v = null;
+			foreach ($arr as $arg => $cnf) {
+				$r = call_user_func_array(
+					[$this, 'callbackOrder_' . $fnPre],
+					[$val, $keys, $cnf['er'], $v]
+				);
+				$this->readonly[$arg] = call_user_func_array(
+					[$this, 'callbackOrder_' . $cnf['fn']],
+					[$r, $v,]
+				);
+			}
+		} elseif (is_string($val)) {
+			foreach ($arr as $arg => $cnf) {
+				$r = $this->callbackOrder_String(
+					$val,
+					$cnf['er'],
+					$v
+				);
+				$this->readonly[$arg] = call_user_func_array(
+					[$this, 'callbackOrder_' . $cnf['fn']],
+					[$r, $v,]
+				);
+			}
+		} else return;
+		return $this->rebuildBitOrder();
 	}
-	public function setBitOrderEndian($val) {
-		$this->readonly['bitOrderEndian'] = (bool)$val;
-		return $this;
+	public function setBitOrderNibble($val = null) {
+		$this->readonly['bitOrderNibble'] = is_null($val) || (bool)$val;
+		return $this->rebuildBitOrder();
 	}
-	public function setBitOrderWord4($val) {
-		$c = filter_var($val, FILTER_VALIDATE_INT, ['min_range' => 0, 'max_range' => 2]);
-		if ($c !== false) $this->readonly['bitOrderWord4'] = (int)$val;
-		return $this;
+	public function setBitOrderEndian($val = null) {
+		$this->readonly['bitOrderEndian'] = is_null($val) || (bool)$val;
+		return $this->rebuildBitOrder();
 	}
-	public function setBitOrderWord8($val) {
-		$c = filter_var($val, FILTER_VALIDATE_INT, ['min_range' => 0, 'max_range' => 2]);
-		if ($c !== false) $this->readonly['bitOrderWord8'] = (int)$val;
-		return $this;
+	public function setBitOrderWord4($val = null) {
+		$this->readonly['bitOrderWord4'] = $this->rebuildHighLow($val);
+		return $this->rebuildBitOrder();
+	}
+	public function setBitOrderWord8($val = null) {
+		$this->readonly['bitOrderWord8'] = $this->rebuildHighLow($val);
+		return $this->rebuildBitOrder();
 	}
 	public function getMinMax() {
 		$conf = $this->getRange();
@@ -244,6 +298,56 @@ class MbTypeInt extends MbType {
 		return $conf;
 	}
 
+	private function callbackOrder_String($val, $er, &$v = null) {
+		if (!preg_match($er, $val, $ret)) return false;
+		$v = @$ret[1];
+		return true;
+	}
+	private function callbackOrder_List(&$val, &$keys, $er, &$v = null) {
+		$a = preg_grep($er, $val);
+		if (!$a) return false;
+		$k = key($a);
+		unset($val[$k]);
+		return $this->callbackOrder_String($a[$k], $er, $v);
+	}
+	private function callbackOrder_Assoc(&$val, &$keys, $er, &$v = null) {
+		$a = preg_grep($er, $keys);
+		if (!$a) return false;
+		$k = key($a);
+		$v = $val[$k];
+		unset($keys[$k]);
+		unset($val[$k]);
+		return true;
+	}
+	private function callbackOrder_Bool($r, $v) {
+		return ($r &&
+			(is_null($v) ||
+				!preg_match('/^\s*(off|f(alse)?|l(ow)?|litte)\s*$/i', $v)
+			)
+		) ? 1 : 0;
+	}
+	private function callbackOrder_HighLow($r, $v) {
+		return $r ? $this->rebuildHighLow($v) : 0;
+	}
+
+	protected function rebuildHighLow($val) {
+		if (is_null($val) || preg_match('/^\s*(1|h(igh)?|on|true|up|big)\s*$/i', $val)) return 1;
+		if (preg_match('/^\s*(2|l(ow)?|little)\s*$/i', $val)) return 2;
+		return 0;
+	}
+	protected function rebuildBitOrder() {
+		static $arr = [
+			self::BIT_ORDER_WORD_NONE => '',
+			self::BIT_ORDER_WORD_HIGH => 'h',
+			self::BIT_ORDER_WORD_LOW => 'l'
+		];
+		$out = $this->readonly['bitOrderNibble'] ? 'N' : '';
+		$out .= $this->readonly['bitOrderEndian'] ? 'E' : '';
+		$out .= ($k = $this->readonly['bitOrderWord4']) ? '4' . $arr[$k] : '';
+		$out .= ($k = $this->readonly['bitOrderWord8']) ? '8' . $arr[$k] : '';
+		$this->readonly['bitOrder'] = $out;
+		return $this;
+	}
 	protected function orderWord($cbin) {
 		$bytes = $this->bytes;
 		$cbin = call_user_func_array(
