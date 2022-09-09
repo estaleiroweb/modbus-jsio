@@ -3,9 +3,10 @@
 namespace EstaleiroWeb\Modbus\Types;
 
 class MbTypeInt8 extends MbTypeInt {
-	public function __construct($endian = null, $lowWFirst = null) {
-		parent::__construct($endian, $lowWFirst);
+	protected function init() {
+		parent::init();
 		$this->readonly['bytes'] = 8;
+		return $this;
 	}
 	public function setBytes($val) {
 		return $this;
