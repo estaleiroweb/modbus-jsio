@@ -244,6 +244,14 @@ class MbTypeInt extends MbType {
 		return $conf;
 	}
 
+	protected function orderWord($cbin) {
+		$bytes = $this->bytes;
+		$cbin = call_user_func_array(
+			[$this, __FUNCTION__ . $bytes],
+			[$cbin, $this->order, $bytes,]
+		);
+		return $cbin;
+	}
 	protected function orderWord1($cbin, $order, $bytes) {
 		return $this->readonly['bitOrderNibble'] ? $cbin : pack('H*', unpack('h*', $cbin)[1]);
 	}
@@ -311,13 +319,5 @@ class MbTypeInt extends MbType {
 			$cbin[1] . $cbin[0] .
 			$cbin[7] . $cbin[6] .
 			$cbin[5] . $cbin[4];
-	}
-	protected function orderWord($cbin) {
-		$bytes = $this->bytes;
-		$cbin = call_user_func_array(
-			[$this, __FUNCTION__ . $bytes],
-			[$cbin, $this->order, $bytes,]
-		);
-		return $cbin;
 	}
 }
