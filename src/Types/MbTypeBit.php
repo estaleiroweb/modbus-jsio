@@ -10,12 +10,11 @@ class MbTypeBit extends MbType {
 		$this->readonly['unsigned'] = true;
 		return $this;
 	}
-	public function __construct($val = null) {
-		$this->init();
-	}
 	public function __toString() {
-		$s = $this->unsigned ? 1 : -1;
-		return $s * $this->raw;
+		return ($this->unsigned ? 1 : -1) * $this->val;
+	}
+	public function setBytes($val) {
+		return $this;
 	}
 	public function setLen($val) {
 		return $this;

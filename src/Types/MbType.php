@@ -6,14 +6,57 @@ use EstaleiroWeb\Traits\GetSet;
 use Exception;
 use ModbusTcpClient\Utils\Charset;
 
+/**
+ * MbType
+ * - @var int $bytes Default=1
+ * - @var int $val|$value Contains the value in type of class
+ * - @var int $raw Contians the value in string binary getted or to write in modbus slave device
+ * - @var int $rawOrdered Contians the value in string binary ordered by order=NE48 (Nibble=High,Endian=Big,Word4=High,Word8=High)
+ * - @var int $unsigned Defines if numeric value is signed or unsigned. Default=false
+ * - @var int $zerofill String pad left with "0" to numeric values using $len properties. Default=false
+ * - @var int $len Length to show format in __toString method
+ * - @var int $precision Numer of decimals has this number
+ * - @var int|string $min Minimal limit of value
+ * - @var int|string $max Maximus limit of value
+ * - @var array|string $source array or string enum/set/json format that denifes which values can be $val or relation numeber to string value
+ * - @var string bitOrder 
+ * - @var bool bitOrderNibble Default=true
+ * - @var bool bitOrderEndian Default=true
+ * - @var int bitOrderWord4 Default=1
+ * - @var int bitOrderWord8 Default=1
+ */
 abstract class MbType {
 	use GetSet;
 
+	/**
+	 * Bit order first off for 4 or 8 words
+	 * This is same BIT_ORDER_WORD_HIGH when ENDIAN is big first, but
+	 * When Endian is little first, all words is applied in this case
+	 * @example 89ABCDEF=>89ABCDEF, 0123456789ABCDEF=>0123456789ABCDEF
+	 * @var int const
+	 */
+	public const BIT_ORDER_WORD_NONE = 0;
+	/**
+	 * Bit order High first for 4 or 8 words
+	 * When Endian is little first, thist one will applied in separated 4/8 blocks
+	 * @example 89ABCDEF=>89ABCDEF, 0123456789ABCDEF=>0123456789ABCDEF
+	 * @var int const
+	 */
+	public const BIT_ORDER_WORD_HIGH = 1;
+	/**
+	 * Bit order Low first for 4 or 8 words
+	 * When Endian is little first, thist one will applied in separated 4/8 blocks
+	 * @example 89ABCDEF=>CDEF89AB, 0123456789ABCDEF=>89ABCDEF01234567
+	 * @var int const
+	 */
+	public const BIT_ORDER_WORD_LOW = 2;
 	/**
 	 * Used by WAGO 750-XXX as endianness.
 	 *
 	 * When bytes for little endian are in 'ABCD' order then Big Endian Low Word First is in 'BADC' order
 	 * This mean that high word (BA) is first and low word (DC) for double word is last and bytes in words are in big endian order.
+	 * 
+	 * @var array const
 	 */
 	public const BYTE_OTHER_RANGES = [
 		'bit' => [
@@ -61,7 +104,10 @@ abstract class MbType {
 		],
 	];
 	/**
-	 * All formats to unpack function
+	 * Documentation of all formats to pack/unpack function
+	 * 
+	 * @see pack and unpack functions
+	 * @var array const
 	 */
 	public const FORMATS = [
 		'c' => 'signed char',
@@ -105,27 +151,32 @@ abstract class MbType {
 		'dec' => 'float/double',
 	];
 	/**
-	 * @see ENDIANS_ID and ENDIANS const
-	 *
-	 * @var int
-	 */
-	/**
 	 * readonly
 	 *
 	 * @var array GetSet Trait variable
 	 */
 	protected $readonly = [
 		'bytes' => 1,
+
 		'val' => null,
 		'raw' => null,
+		'rawOrdered' => null,
+
 		'unsigned' => false,
 		'zerofill' => false,
 		'len' => null,
 		'precision' => null,
-		'dec' => null,
 		'min' => null,
 		'max' => null,
 		'source' => null,
+
+		'bitOrder' => null,
+		'bitOrderNibble' => true,
+		'bitOrderEndian' => true,
+		'bitOrderWord4' => 1,
+		'bitOrderWord8' => 1,
+
+		'log' => [],
 	];
 	/**
 	 * protect
@@ -145,30 +196,61 @@ abstract class MbType {
 		$this->init();
 		$this->val = $val;
 	}
+	/**
+	 * Shows formated value
+	 *
+	 * @return string
+	 */
 	public function __toString() {
 		return $this->val;
 	}
-	public function __invoke(&$val = null) {
-		if (is_null($val)) return $this->val;
-		$bytes = $this->bytes;
-		$this->val = substr($val, 0, $bytes);
-		$val = substr($val, $bytes);
+	/**
+	 * Get or set raw by binary string
+	 *
+	 * @param  string|null $cbin binary string will droped into $bytes length to set raw
+	 * @return string|self When $cbin is null return raw otherise set this one
+	 */
+	public function __invoke(&$cbin = null) {
+		if (is_null($cbin)) return $this->raw;
+		$this->raw = $cbin;
+		$cbin = substr($cbin, $this->bytes);
 		return $this;
 	}
 
 	/**
-	 * setVal
+	 * Set $val/$value and $raw properties by normal value
 	 *
-	 * @param  mixed $val Value to use in the type
+	 * @param  string|int|float|double|null $val Value to use in the type
 	 * @return self
 	 */
 	public function setVal($val) {
-		$this->readonly['val'] = $val;
-		$this->readonly['raw'] = $val;
+		$val = substr($val, 0, $this->bytes);
+		$this->readonly['val'] =
+			$this->readonly['raw'] =
+			$this->readonly['rawOrdered'] = $val;
 		return $this;
 	}
 	/**
-	 * setLen
+	 * Set $val/$value and $raw properties by string binary
+	 *
+	 * @param  string|int|float|double|null $val Value to use in the type
+	 * @return self
+	 */
+	public function setRaw($cbin) {
+		return $this->setVal($cbin);
+	}
+	/**
+	 * Set $bytes properties
+	 *
+	 * @param  int $val Value to use in the type
+	 * @return self
+	 */
+	public function setBytes($val) {
+		$this->readonly['bytes'] = (int)$val;
+		return $this;
+	}
+	/**
+	 * Set $len properties
 	 *
 	 * @param  int|null $val Value to use in the type
 	 * @return self
@@ -185,7 +267,7 @@ abstract class MbType {
 	 * @return self
 	 */
 	public function setSource($val) {
-		if (is_array($val)) {
+		if (is_null($val) || is_array($val)) {
 			$this->readonly['source'] = $val;
 			return $this;
 		}
@@ -211,6 +293,17 @@ abstract class MbType {
 		} catch (Exception $e) {
 		}
 		return $this->setSource($js);
+	}	
+	/**
+	 * Clear or add log
+	 *
+	 * @param  string|null $val
+	 * @return self
+	 */
+	public function setLog($val = null) {
+		if ($val) $this->readonly['log'] = [];
+		else $this->readonly['log'][] = $val;
+		return $this;
 	}
 
 	/**
@@ -277,38 +370,8 @@ abstract class MbType {
 		}
 		return $out;
 	}
-
-	public static function cBinHex($cbin) { //ex: "\xF1\x23" => F123
-		return unpack('H*', $cbin)[1];
-	}
-	public static function cInvert($cbin) { //ex: "\xF1\x23" => "\x1F\x32"
-		return pack('H*', unpack('h*', $cbin)[1]);
-	}
-	public static function swap16($hex) { //ex: F123 => 23F1
-		$n = 2;
-		return
-			substr($hex, $n, $n) .
-			substr($hex, 0, $n);
-	}
-	public static function swap32($hex) { //ex: F123 4567 => 23F1 6745
-		$n = 4;
-		return
-			self::swap16(substr($hex, 0, $n)) .
-			self::swap16(substr($hex, $n, $n));
-	}
-	public static function swap64($hex) { //ex: F123 4567 89AB CDEF => 23F1 6745 AB89 EFCD
-		$n = 8;
-		return
-			self::swap32(substr($hex, 0, $n)) .
-			self::swap32(substr($hex, $n, $n));
-	}
-	public static function cSwap16($cbin) { //ex: "\xF3\x12" => "\x12\xF3"
-		return pack('H*', self::swap16(self::cBinHex($cbin)));
-	}
-	public static function cSwap32($cbin) {
-		return pack('H*', self::swap32(self::cBinHex($cbin)));
-	}
-	public static function cSwap64($cbin) {
-		return pack('H*', self::swap64(self::cBinHex($cbin)));
-	}
 }
+
+
+$a = new MbTypeInt;
+$a = new MbType;

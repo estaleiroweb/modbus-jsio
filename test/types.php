@@ -31,10 +31,14 @@
 
 */
 
+namespace EstaleiroWeb\Modbus\Types;
+
 use EstaleiroWeb\Modbus\Modbus;
 use EstaleiroWeb\Traits\Args;
+use EstaleiroWeb\Traits\GetSet;
 
 require __DIR__ . '/../vendor/autoload.php';
+
 cli();
 define('MAX_VALUE_UINT16', 0xFFFF); // 65535 as dec
 define('MIN_VALUE_UINT16', 0x0);
