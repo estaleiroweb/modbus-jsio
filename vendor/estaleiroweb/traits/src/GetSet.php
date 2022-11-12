@@ -1,18 +1,29 @@
 <?php
 
 namespace EstaleiroWeb\Traits;
-
 /**
- * Fork of GetterAndSetter
+ * Implement auto getters and setters caller methods\
+ * Where get**PropertyName** or set**PropertyName** have first priority\
+ * And in second priority we have protected/privated priority\
+ * And finaly $readonly/$protect
+ * It needs implement 2 properties:
+ * ```php
+ * // readonly and hide property
+ * protected $readonly = ['property1'=>'value','property2'=>'value','propertyN'=>'value',];
+ * // read and write property
+ * protected $protect = ['property1'=>'value','property2'=>'value','propertyN'=>'value',];
+ * ```
  */
 trait GetSet {
 	/**
 	 * Variaveis resgataveis
+	 * @example protected $readonly = ['property1'=>'value','property2'=>'value','propertyN'=>'value',]
 	 * @var array
 	 */
 	//protected $readonly = [];
 	/**
 	 * Variaveis resgataveis
+	 * @example protected $protect = ['property1'=>'value','property2'=>'value','propertyN'=>'value',]
 	 * @var array
 	 */
 	//protected $protect = [];
@@ -24,8 +35,8 @@ trait GetSet {
 	 * @return mixed
 	 */
 	public function __get($nm) {
-		if (key_exists($nm, $this->readonly)) return $this->readonly[$nm];
 		if (method_exists($this, $fn = 'get' . $nm)) return $this->$fn();
+		if (property_exists($this, $nm)) return $this->$nm;
 		if (key_exists($nm, $this->protect)) return $this->protect[$nm];
 	}
 	/**
@@ -37,7 +48,10 @@ trait GetSet {
 	 */
 	public function __set($nm, $val) {
 		if (method_exists($this, $fn = 'set' . $nm)) return $this->$fn($val);
-		if (!key_exists($nm, $this->readonly)) $this->protect[$nm] = $val;
+		elseif (
+			!key_exists($nm, $this->readonly) &&
+			!property_exists($this, $nm)
+		) $this->protect[$nm] = $val;
 	}
 
 	/**

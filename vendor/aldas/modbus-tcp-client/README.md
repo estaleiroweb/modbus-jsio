@@ -30,6 +30,7 @@ composer require aldas/modbus-tcp-client
 ### Utility functions
 
 * [Packet::isCompleteLength](src/Utils/Packet.php) - checks if data is complete Modbus TCP packet
+* [Packet::isCompleteLengthRTU()](src/Utils/Packet.php) - checks if data is complete Modbus RTU packet
 * [ErrorResponse::is](src/Packet/ErrorResponse.php) - checks if data is Modbus TCP error packet
 
 ## Requirements
@@ -166,6 +167,11 @@ $responseAsTcpPacket = RtuConverter::fromRtu($binaryData);
 See Linux example in 'examples/[rtu_usb_to_serial.php](examples/rtu_usb_to_serial.php)'
 
 
+## Example of Modbus RTU over TCP + higher level API usage
+
+See example in 'examples/[rtu_over_tcp_with_higherlevel_api.php](examples/rtu_over_tcp_with_higherlevel_api.php)'
+
+
 ## Example of non-blocking socket IO with ReactPHP/Amp (i.e. modbus request are run in 'parallel')
 
 * 'examples/[example_parallel_requests_reactphp.php](examples/example_parallel_requests_reactphp.php) - example of non-blocking socket IO with ReactPHP socket library (https://github.com/reactphp/socket)
@@ -204,3 +210,7 @@ For Windows users:
 * all ` vendor/bin/phpunit`
 * unit tests ` vendor/bin/phpunit --testsuite 'unit-tests'`
 * integration tests ` vendor/bin/phpunit --testsuite 'integration-tests'`
+
+# Static analysis
+
+Run [PHPStan](https://phpstan.org/) analysis `compose check`
